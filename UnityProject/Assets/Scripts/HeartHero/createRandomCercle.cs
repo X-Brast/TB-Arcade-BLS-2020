@@ -10,22 +10,30 @@ public class createRandomCercle : MonoBehaviour
     private float delay = 1.0f;
     private float timeCurrent = 0.0f;
     private Queue<GameObject> list = new Queue<GameObject>();
-    private bool isFinish = false;
+    private bool isFinish = true;
 
     private int z = 0; // car nous travaillons en 2D
     private int xBegin = 0;
     private int yBegin = 5;
     private int xTarget = 0;
     private int yTarget = -4;
+    private KeyCode key;
+    private int layer;
 
-    void Start()
+    void InitKey(KeyCode key){
+        this.key = key;
+    }
+
+    void TheStart(int layer)
     {
+        this.layer = layer;
         Vector3 position = new Vector3(xTarget, yTarget, z);
+        targets.layer = layer;
+        targets.GetComponent< Activator >().key = key;
         Instantiate(targets, position, Quaternion.identity);
-
-        print(PlayerPrefs.GetInt("nbPlayer"));
-
         AnalyseSound();
+
+        isFinish = false;
     }
 
     private void AnalyseSound(){
@@ -42,7 +50,9 @@ public class createRandomCercle : MonoBehaviour
     {
         if(!isFinish && timeCurrent + delay < Time.fixedTime){
             Vector3 position = new Vector3(xBegin, yBegin, z);
-            Instantiate(list.Dequeue(), position, Quaternion.identity);
+            GameObject o = list.Dequeue();
+            o.layer = layer;
+            Instantiate(o, position, Quaternion.identity);
             timeCurrent = Time.fixedTime;
             isFinish = list.Count == 0;
         }

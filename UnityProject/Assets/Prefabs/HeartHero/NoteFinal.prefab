@@ -13,7 +13,7 @@ GameObject:
   - component: {fileID: 9074409358317533538}
   - component: {fileID: 8871364599129174131}
   - component: {fileID: 2850897915049191502}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: NoteFinal
   m_TagString: Final
   m_Icon: {fileID: 0}
@@ -99,7 +99,7 @@ CircleCollider2D:
   m_UsedByComposite: 0
   m_Offset: {x: 0, y: 0}
   serializedVersion: 2
-  m_Radius: 0.1
+  m_Radius: 0.0001
 --- !u!50 &8871364599129174131
 Rigidbody2D:
   serializedVersion: 4

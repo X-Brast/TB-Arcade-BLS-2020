@@ -9,6 +9,7 @@ public class Activator : MonoBehaviour
     private GameObject note;
     private GameLogique gm;
     private bool active = false;
+    private bool noteExist = false;
     private Color old;
     private SpriteRenderer sr;
 
@@ -30,18 +31,20 @@ public class Activator : MonoBehaviour
             StartCoroutine(Pressed());
 
         if(Input.GetKeyDown(key) && !active){
-            gm.ResetStreak();
+            gm.ResetStreak(gameObject.layer);
         }
 
         if(Input.GetKeyDown(key) && active){
+            noteExist = false;
             AddScore();
-            gm.AddStreak();
+            gm.AddStreak(gameObject.layer);
             Destroy(note);
         }
     }
 
     void OnTriggerEnter2D(Collider2D col){
         if(col.gameObject.tag=="Note"){
+            noteExist = true;
             active = true;
             note=col.gameObject;
         }
@@ -53,12 +56,14 @@ public class Activator : MonoBehaviour
 
     void OnTriggerExit2D(Collider2D col){
         active = false;
-        if(! note)
-            gm.ResetStreak();
+        if(noteExist){
+            gm.ResetStreak(gameObject.layer);
+            noteExist = false;
+        }
     }
 
     void AddScore(){
-        PlayerPrefs.SetInt("Score", PlayerPrefs.GetInt("Score") + gm.GetScore());
+        gm.AddScore(gameObject.layer);
     }
 
     IEnumerator Pressed(){
