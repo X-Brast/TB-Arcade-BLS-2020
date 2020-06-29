@@ -39,14 +39,13 @@ namespace blueConnect {
         [DllImport("BTManagerLibrary")]
         private static extern bool BTM_IsReceiving();
 
-        private bool isDevicesSearching = false;
-
         private LinkedList<ConnectorDeviceBLS> listDeviceBLS;
         private LinkedList<String> listDeviceChecked;
         private UnityBackgroundWorker ubw;
         private DeviceFinderHelper dfh;
 
         private String nameGame = "Luffy";
+        private bool isDevicesSearching = false;
 
         private FinderDevicesBLS(){
             listDeviceBLS = new LinkedList<ConnectorDeviceBLS>();
@@ -66,15 +65,30 @@ namespace blueConnect {
         public void FindDevices(MonoBehaviour caller)
         {
             if(!isDevicesSearching){ 
+                //this.caller = caller;
                 ubw = new UnityBackgroundWorker(caller, FindDevicesBegin, FindDevicesProgress, FindDevicesDone, dfh);
                 isDevicesSearching = true;
                 ubw.Run();
             }
         }
 
-        void AddDeviceBLS(String name){
-            if(listDeviceBLS.Count < 6){
-                listDeviceBLS.AddFirst(new ConnectorDeviceBLS(name));
+        public void StopFindDevices(){
+            if(isDevicesSearching)
+                ubw.Abort();
+            isDevicesSearching = false;
+        }
+
+        private bool isExistDeviceConnect(String name, String surname){
+            foreach(var cdb in listDeviceBLS){
+                if(cdb.nameDevice.Equals(name) && cdb.surnameDevice.Equals(surname))
+                    return true;
+            } 
+            return false;
+        }
+
+        void AddDeviceBLS(String name, String surname){
+            if(listDeviceBLS.Count < 6 && !isExistDeviceConnect(name, surname)){
+                listDeviceBLS.AddFirst(new ConnectorDeviceBLS(name, surname));
             }
         }
 
@@ -87,10 +101,11 @@ namespace blueConnect {
         }
 
         bool checkBLSDevice(String nameDevice, object CustomData){
-            if(nameDevice.Contains("BLS2020HC05HESAV")){
-                try {
-                    string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
-                    if(status.Contains("Connected")){
+            try {
+                string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
+                if(status.Contains("Connected")){
+                    String available = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
+                    if(available.Contains("I am available")){
                         Marshal.PtrToStringAnsi(BTM_SendDataFast("Hello, I search BLS device"));
                         bool isFinish = false;
                         String response = "";
@@ -109,7 +124,8 @@ namespace blueConnect {
                         response = response.Substring(0, response.Length-2);
                         if(response.Contains("I Am BLS Device. My Name Is ") && response.EndsWith(" Terminate.")){
                             DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
-                            temp.surnameDevice = response.Substring(21);
+                            String[] splitReponse = response.Split(' ');
+                            temp.surnameDevice = splitReponse[splitReponse.Length - 2];
                             Marshal.PtrToStringAnsi(BTM_SendDataFast("Ok, my name is " + nameGame));
                             return true;
                         }
@@ -117,10 +133,10 @@ namespace blueConnect {
                             Marshal.PtrToStringAnsi(BTM_SendDataFast("Abort"));
                         }
                     }
-                } catch (Exception e) {}
-                finally {
-                    Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
                 }
+            } catch (Exception e) {}
+            finally {
+                Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
             }
             
             return false;
@@ -143,9 +159,12 @@ namespace blueConnect {
             string[] devicesList = temp.transferedText.Split('\n');
             foreach (var device in devicesList) {
                 if (device.Length != 0 && !(listDeviceChecked.Contains(device))) {
-                    if(checkBLSDevice(device, temp))
-                        AddDeviceBLS(device);
-                    listDeviceChecked.AddFirst(device);
+                    if(device.Contains("BLS2020HC05HESAV")){
+                        if(checkBLSDevice(device, temp))
+                            AddDeviceBLS(device, temp.surnameDevice);
+                    }
+                    else
+                        listDeviceChecked.AddFirst(device);
                 }
             }
         }

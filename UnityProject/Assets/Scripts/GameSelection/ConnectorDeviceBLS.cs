@@ -19,8 +19,8 @@ namespace blueConnect {
         private UnityBackgroundWorker dataReceiver;
         private DataCommunicationHelper dataReceiverHelper;
         private Boolean isRunning = false;
-        private String nameDevice;
-        private String surnameDevice;
+        public String nameDevice {get;}
+        public String surnameDevice {get;}
 
         [DllImport("BTManagerLibrary")]
         private static extern bool BTM_IsConnected();
@@ -34,8 +34,9 @@ namespace blueConnect {
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_DisconnectFromDevice();
 
-        public ConnectorDeviceBLS(String name){
+        public ConnectorDeviceBLS(String name, String surname){
             nameDevice = name;
+            surnameDevice = surname;
 
             dataReceiverHelper = new DataCommunicationHelper();
         }

@@ -76,6 +76,9 @@ void initConnection(){
       }
     }
   }
+  else{
+    bluetooth.println("I am available");
+  }
     
   delay(1000);
 }
