@@ -8,7 +8,7 @@ public class GameSelection : MonoBehaviour
     // Start is called before the first frame update
     public void StartGameHeartHero()
     {
-        PlayerPrefs.SetInt("nbPlayer", 3);
+        PlayerPrefs.SetInt("nbPlayer", 6);
         SceneManager.LoadScene("HeartHero");
     }
 }
