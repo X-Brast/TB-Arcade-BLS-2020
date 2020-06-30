@@ -87,6 +87,7 @@ namespace blueConnect {
         }
         void BGW_ReceiveData_Progress(object CustomData, int Progress)
         {
+            Debug.Log("Progress");
             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
             if(temp.objectTarget == null)
                 Debug.Log(temp.receivedData);

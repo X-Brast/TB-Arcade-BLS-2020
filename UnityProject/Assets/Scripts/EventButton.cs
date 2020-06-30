@@ -6,7 +6,7 @@ using UnityEngine.SceneManagement;
 public class EventButton : MonoBehaviour
 {
     public void start(){
-        SceneManager.LoadScene("MainGame");
+        SceneManager.LoadScene("GameSelection");
     }
 
     public void stop(){
