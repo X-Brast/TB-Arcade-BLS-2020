@@ -78,7 +78,10 @@ namespace HoV {
 			}
 			if (Information.Status == UnityBackgroundWorkerStatus.Busy)
 				Information.Status = UnityBackgroundWorkerStatus.Done;
-			DoneMethod(Data, Information);
+			Thread DoneThread =  new Thread(() => DoneMethod(Data, Information));
+			DoneThread.IsBackground = true;
+			DoneThread.Start();
+			//DoneMethod(Data, Information);
 			args = null;
 			WorkerThread = null;
 			Information = null;

@@ -1,10 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using blueConnect;
 
 public class Activator : MonoBehaviour
 {
-    public KeyCode key;
+    public ConnectorDeviceBLS device;
     
     private GameObject note;
     private GameLogique gm;
@@ -27,18 +28,19 @@ public class Activator : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        if(Input.GetKeyDown(key))
+        if(device != null && device.data.Count > 0) {
             StartCoroutine(Pressed());
+            int value = device.data.Dequeue();
 
-        if(Input.GetKeyDown(key) && !active){
-            gm.ResetStreak(gameObject.layer);
-        }
-
-        if(Input.GetKeyDown(key) && active){
-            noteExist = false;
-            AddScore();
-            gm.AddStreak(gameObject.layer);
-            Destroy(note);
+            if(active) {
+                noteExist = false;
+                AddScore();
+                gm.AddStreak(device.surnameDevice);
+                Destroy(note);
+            }
+            else 
+                gm.ResetStreak(device.surnameDevice);
+            
         }
     }
 
@@ -57,13 +59,13 @@ public class Activator : MonoBehaviour
     void OnTriggerExit2D(Collider2D col){
         active = false;
         if(noteExist){
-            gm.ResetStreak(gameObject.layer);
+            gm.ResetStreak(device.surnameDevice);
             noteExist = false;
         }
     }
 
     void AddScore(){
-        gm.AddScore(gameObject.layer);
+        gm.AddScore(device.surnameDevice);
     }
 
     IEnumerator Pressed(){

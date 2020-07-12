@@ -37,14 +37,27 @@ public class SearchPlayer : MonoBehaviour
     IEnumerator FindingDevices(){
         FinderDevicesBLS fdb = FinderDevicesBLS.Instance;
 
-        fdb.StopFindDevices();
         fdb.FindDevices(this);
 
         while(fdb.IsRunning()){
             yield return new WaitForSeconds(.3f);
         }
 
+        LinkedList<ConnectorDeviceBLS> ldb2 = fdb.GetListDevicesBLS();
+
+        yield return new WaitForSeconds(1.0f);
+
+        CheckDeviceBLSConnected cdbc = CheckDeviceBLSConnected.Instance;
+
+        //cdbc.Start(this);
+
+        while(cdbc.IsRunning()){
+            yield return new WaitForSeconds(.3f);
+        }
+
         LinkedList<ConnectorDeviceBLS> ldb = fdb.GetListDevicesBLS();
+        Debug.Log(ldb.Count + " " + ldbFinished.Count);
+
 
         foreach(var device in ldb){
             if(!ldbFinished.Contains(device)){

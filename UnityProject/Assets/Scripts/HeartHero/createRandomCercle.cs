@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using blueConnect;
 
 public class createRandomCercle : MonoBehaviour
 {
@@ -17,11 +18,12 @@ public class createRandomCercle : MonoBehaviour
     private int yBegin = 5;
     private int xTarget = 0;
     private int yTarget = -4;
-    private KeyCode key;
+    private ConnectorDeviceBLS device; 
     private int layer;
 
-    void InitKey(KeyCode key){
-        this.key = key;
+    void InitKey(ConnectorDeviceBLS device){
+        Debug.Log(device);
+        this.device = device;
     }
 
     void TheStart(int layer)
@@ -29,15 +31,15 @@ public class createRandomCercle : MonoBehaviour
         this.layer = layer;
         Vector3 position = new Vector3(xTarget, yTarget, z);
         targets.layer = layer;
-        targets.GetComponent< Activator >().key = key;
-        Instantiate(targets, position, Quaternion.identity);
+        GameObject go = Instantiate(targets, position, Quaternion.identity);
+        go.GetComponent< Activator >().device = device;
         AnalyseSound();
 
         isFinish = false;
     }
 
     private void AnalyseSound(){
-        for (int i = 0; i < 100; i++)
+        for (int i = 0; i < 10; i++)
         {
             list.Enqueue(note);
         }

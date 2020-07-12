@@ -2,31 +2,44 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using blueConnect;
 
 public class GameLogique : MonoBehaviour
 {
     public Canvas canvas;
     public Camera camera;
 
-    private KeyCode[] keys = new KeyCode[] {KeyCode.A, KeyCode.S, KeyCode.D, KeyCode.F, KeyCode.G, KeyCode.H};
+    private bool isNotCloseGame = true;
+
+    private LinkedList<ConnectorDeviceBLS> ldb = new LinkedList<ConnectorDeviceBLS>();
 
     void Start()
     {
-        
-        int nbPlayer = PlayerPrefs.GetInt("nbPlayer");
+        //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
+        //LinkedList<ConnectorDeviceBLS> ldb = new LinkedList<ConnectorDeviceBLS>();
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
+        int nbPlayer = ldb.Count;
+
+        if(nbPlayer == 0){
+            SceneManager.LoadScene(1);
+            return;
+        }
+
         float w = 1.0f/nbPlayer;
+        int counter = 0;
+        foreach (var device in ldb) {
+            device.Start(this);
 
-        for(int i = 0; i < nbPlayer && i < 6; ++i){
-            int layer = LayerMask.NameToLayer("Player" + (i+1).ToString());
+            int layer = LayerMask.NameToLayer("Player" + (counter+1).ToString());
 
-            PlayerPrefs.SetInt("Highstreak" + layer, 0);
-            PlayerPrefs.SetInt("Score" + layer, 0);
-            PlayerPrefs.SetInt("NotesHit" + layer, 0);
-            PlayerPrefs.SetInt("Streak" + layer, 0);
-            PlayerPrefs.SetInt("Mult" + layer, 1);
+            PlayerPrefs.SetInt("Highstreak" + device.surnameDevice, 0);
+            PlayerPrefs.SetInt("Score" + device.surnameDevice, 0);
+            PlayerPrefs.SetInt("NotesHit" + device.surnameDevice, 0);
+            PlayerPrefs.SetInt("Streak" + device.surnameDevice, 0);
+            PlayerPrefs.SetInt("Mult" + device.surnameDevice, 1);
 
             Camera cam = Instantiate(camera, new Vector3(0, 0,-10), Quaternion.identity);
-            cam.rect = new Rect(w * i, 0.0f, w, 1.0f);
+            cam.rect = new Rect(w * counter, 0.0f, w, 1.0f);
             cam.backgroundColor = new Color(
                                         Random.Range(0f, 1f), 
                                         Random.Range(0f, 1f), 
@@ -37,21 +50,20 @@ public class GameLogique : MonoBehaviour
             Canvas can = Instantiate(canvas, new Vector3(0, 0, 0), Quaternion.identity);
             can.renderMode = RenderMode.ScreenSpaceCamera;
             can.worldCamera = cam;
-            can.transform.GetChild(0).gameObject.GetComponent< PPtext >().name = "Score" + layer;
-            can.transform.GetChild(1).gameObject.GetComponent< PPtext >().name = "Mult" + layer;
-            can.transform.GetChild(2).gameObject.GetComponent< PPtext >().name = "Streak" + layer;
 
-            can.SendMessage("InitKey", keys[i]);
+            can.SendMessage("InitKey", device);
             can.SendMessage("TheStart", layer);
+
+            ++counter;
         }
     }
 
-    public void AddStreak(int layer){
-        PlayerPrefs.SetInt("Streak" + layer, PlayerPrefs.GetInt("Streak" + layer)+1);
-        PlayerPrefs.SetInt("NotesHit" + layer, PlayerPrefs.GetInt("NotesHit" + layer)+1);
+    public void AddStreak(string nameDevice){
+        PlayerPrefs.SetInt("Streak" + nameDevice, PlayerPrefs.GetInt("Streak" + nameDevice)+1);
+        PlayerPrefs.SetInt("NotesHit" + nameDevice, PlayerPrefs.GetInt("NotesHit" + nameDevice)+1);
         
-        int streak = PlayerPrefs.GetInt("Streak" + layer);
-        int multiplier = PlayerPrefs.GetInt("Mult" + layer);
+        int streak = PlayerPrefs.GetInt("Streak" + nameDevice);
+        int multiplier = PlayerPrefs.GetInt("Mult" + nameDevice);
 
         if(streak > 50)
             multiplier = 10;
@@ -66,28 +78,35 @@ public class GameLogique : MonoBehaviour
         else
             multiplier = 1;
 
-        PlayerPrefs.SetInt("Mult" + layer, multiplier);
+        PlayerPrefs.SetInt("Mult" + nameDevice, multiplier);
 
-        if(streak > PlayerPrefs.GetInt("HighStreak" + layer))
-            PlayerPrefs.SetInt("Highstreak" + layer, streak);
+        if(streak > PlayerPrefs.GetInt("HighStreak" + nameDevice))
+            PlayerPrefs.SetInt("Highstreak" + nameDevice, streak);
     }
 
-    public void ResetStreak(int layer){
-        PlayerPrefs.SetInt("Mult" + layer, 1);
-        PlayerPrefs.SetInt("Streak" + layer, 0);
+    public void ResetStreak(string nameDevice){
+        PlayerPrefs.SetInt("Mult" + nameDevice, 1);
+        PlayerPrefs.SetInt("Streak" + nameDevice, 0);
     }
 
     public void EndGame(){
-        // if(PlayerPrefs.GetInt("Score" + layer) > PlayerPrefs.GetInt("Highscore"));
-        //     PlayerPrefs.SetInt("Highscore", PlayerPrefs.GetInt("Score" + layer));
-        SceneManager.LoadScene("HeartHeroClassement");
+        if(isNotCloseGame){
+            isNotCloseGame = false;
+            //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
+            foreach (var device in ldb){
+                device.Stop();
+                if(PlayerPrefs.GetInt("Score" + device.surnameDevice) > PlayerPrefs.GetInt("Highscore" + device.surnameDevice));
+                    PlayerPrefs.SetInt("Highscore" + device.surnameDevice, PlayerPrefs.GetInt("Score" + device.surnameDevice));
+            } 
+            SceneManager.LoadScene("HeartHeroClassement");
+        }
     }
 
-    public void AddScore(int layer){
-        PlayerPrefs.SetInt("Score" + layer, PlayerPrefs.GetInt("Score"+ layer) + GetScore(layer));
+    public void AddScore(string nameDevice){
+        PlayerPrefs.SetInt("Score" + nameDevice, PlayerPrefs.GetInt("Score"+ nameDevice) + GetScore(nameDevice));
     }
 
-    public int GetScore(int layer){
-        return 100 * PlayerPrefs.GetInt("Mult" + layer);
+    public int GetScore(string nameDevice){
+        return 100 * PlayerPrefs.GetInt("Mult" + nameDevice);
     }
 }
