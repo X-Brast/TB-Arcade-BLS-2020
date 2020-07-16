@@ -6,7 +6,7 @@ using System.Threading;
 using UnityEngine;
 using HoV;
 
-namespace blueConnect {
+namespace BlueConnect {
 
     class DeviceFinderHelper
     {
@@ -101,6 +101,10 @@ namespace blueConnect {
             return listDeviceBLS;
         }
 
+        public int NbDevicesBLS() {
+            return listDeviceBLS.Count;
+        }
+
         public bool IsRunning(){
             return isDevicesSearching;
         }
@@ -123,14 +127,12 @@ namespace blueConnect {
                         response = response.Substring(0, response.Length-2);
                         Debug.Log("End Loop  " + response + response.Contains("I Am BLS Device. My Name Is ") + response.EndsWith(" Terminate."));
                         if(response.Contains("I Am BLS Device. My Name Is ") && response.EndsWith(" Terminate.")){
-                            Debug.Log("Inside");
                             DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
                             String[] splitReponse = response.Split(' ');
                             temp.surnameDevice = splitReponse[splitReponse.Length - 2];
                             Marshal.PtrToStringAnsi(BTM_SendDataFast("Ok, my name is " + nameGame));
                             Thread.Sleep(2000);
                             response = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
-                            Debug.Log(response);
                             Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
                             if(response.Contains("I am connected with " + nameGame))
                                 return true;
@@ -149,7 +151,6 @@ namespace blueConnect {
                     Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
                 hm.MonitorOut();
             }
-            Debug.Log("End Search");
             
             return false;
         }

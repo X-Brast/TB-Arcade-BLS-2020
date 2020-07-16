@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using blueConnect;
+using BlueConnect;
 
 public class Activator : MonoBehaviour
 {
@@ -16,7 +16,7 @@ public class Activator : MonoBehaviour
 
     void Awake(){
         sr = GetComponent<SpriteRenderer>();
-        gm = GameObject.Find("GameLogique").GetComponent<GameLogique>();
+        gm = GameObject.Find("GameLogic").GetComponent<GameLogique>();
     }
 
     // Start is called before the first frame update
@@ -34,38 +34,34 @@ public class Activator : MonoBehaviour
 
             if(active) {
                 noteExist = false;
-                AddScore();
+                gm.AddScore(device.surnameDevice, value);
                 gm.AddStreak(device.surnameDevice);
                 Destroy(note);
             }
-            else 
+            else {
                 gm.ResetStreak(device.surnameDevice);
+            }
             
         }
     }
 
     void OnTriggerEnter2D(Collider2D col){
-        if(col.gameObject.tag=="Note"){
+        if(col.gameObject.tag=="Note"){ 
             noteExist = true;
             active = true;
             note=col.gameObject;
-        }
-
-        if(col.gameObject.tag=="Final"){
-            gm.EndGame();
         }
     }
 
     void OnTriggerExit2D(Collider2D col){
         active = false;
+        if(col.gameObject.tag=="Final"){
+            gm.EndGame();
+        }
         if(noteExist){
             gm.ResetStreak(device.surnameDevice);
             noteExist = false;
         }
-    }
-
-    void AddScore(){
-        gm.AddScore(device.surnameDevice);
     }
 
     IEnumerator Pressed(){

@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
+using BlueConnect;
 
 public class SearchGame : MonoBehaviour
 {
@@ -44,7 +45,7 @@ public class SearchGame : MonoBehaviour
             GameObject go = Instantiate(ButtonStartGame, position, Quaternion.identity);
             go.transform.SetParent(canvas.transform, false);
             go.GetComponent<Button>().onClick.AddListener(delegate{
-                PlayerPrefs.SetInt("nbPlayer", SearchPlayer.GetNbPlayer());
+                PlayerPrefs.SetInt("nbPlayer", FinderDevicesBLS.Instance.NbDevicesBLS());
                 SceneManager.LoadScene(gi.nameScene);
             });
 

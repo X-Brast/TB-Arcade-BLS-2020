@@ -5,7 +5,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using BlueConnect;
 
-public class DisplayScore : MonoBehaviour
+public class RaceDisplayScore : MonoBehaviour
 {
     public GameObject panelScorePlayer;
     public Canvas canvas;
@@ -40,25 +40,23 @@ public class DisplayScore : MonoBehaviour
 
             GameObject go = Instantiate(panelScorePlayer, position, Quaternion.identity);
             go.transform.SetParent(canvas.transform, false);
-            //go.GetComponent<RectTransform>().sizeDelta = new Vector2 (sizeXPanel, go.RectTransform.sizeDelta.y);
             
             go.GetComponent<Image>().color = new Color(
                                                 Random.Range(0f, 1f), 
                                                 Random.Range(0f, 1f), 
                                                 Random.Range(0f, 1f)
                                             );
-            GameObject namePlayer   = go.transform.GetChild(0).gameObject;
-            GameObject scorePlayer  = go.transform.GetChild(2).gameObject;
-            GameObject hitPlayer    = go.transform.GetChild(4).gameObject;
-            GameObject maxHit       = go.transform.GetChild(6).gameObject;
-            GameObject comboPlayer  = go.transform.GetChild(8).gameObject;
+            GameObject namePlayer       = go.transform.GetChild(0).gameObject;
+            GameObject timePlayer       = go.transform.GetChild(2).gameObject;
+            GameObject goodHitPlayer    = go.transform.GetChild(5).gameObject;
+            GameObject badHitPlayer     = go.transform.GetChild(7).gameObject;
+            GameObject comboPlayer      = go.transform.GetChild(9).gameObject;
             
             namePlayer.GetComponent<Text>().text    = device.surnameDevice;
-            scorePlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("Score" + device.surnameDevice) + "";
-            //scorePlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("Highscore" + device.surnameDevice) + "";
-            hitPlayer.GetComponent<Text>().text     = PlayerPrefs.GetInt("NotesHit" + device.surnameDevice) + "";
-            maxHit.GetComponent<Text>().text        = PlayerPrefs.GetInt("NotesMax") + "";
-            comboPlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("Highstreak" + device.surnameDevice) + "";
+            timePlayer.GetComponent<Text>().text    = PlayerPrefs.GetInt("RaceScore" + device.surnameDevice) + "";
+            goodHitPlayer.GetComponent<Text>().text = PlayerPrefs.GetInt("RaceGoodHit" + device.surnameDevice) + "";
+            badHitPlayer.GetComponent<Text>().text  = PlayerPrefs.GetInt("RaceBadHit" + device.surnameDevice) + "";
+            comboPlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("RaceHighstreak" + device.surnameDevice) + "";
         }
     }
 }

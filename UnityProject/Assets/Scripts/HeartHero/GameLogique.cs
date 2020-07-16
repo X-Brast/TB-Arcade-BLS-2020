@@ -2,7 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using blueConnect;
+using UnityEngine.UI;
+using BlueConnect;
 
 public class GameLogique : MonoBehaviour
 {
@@ -16,8 +17,13 @@ public class GameLogique : MonoBehaviour
     void Start()
     {
         //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
-        //LinkedList<ConnectorDeviceBLS> ldb = new LinkedList<ConnectorDeviceBLS>();
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Bobo"));
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Carole"));
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Inconnu"));
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Richard"));
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Jessica"));
+
         int nbPlayer = ldb.Count;
 
         if(nbPlayer == 0){
@@ -28,7 +34,7 @@ public class GameLogique : MonoBehaviour
         float w = 1.0f/nbPlayer;
         int counter = 0;
         foreach (var device in ldb) {
-            device.Start(this);
+            //idevice.StartGame(this);
 
             int layer = LayerMask.NameToLayer("Player" + (counter+1).ToString());
 
@@ -50,6 +56,9 @@ public class GameLogique : MonoBehaviour
             Canvas can = Instantiate(canvas, new Vector3(0, 0, 0), Quaternion.identity);
             can.renderMode = RenderMode.ScreenSpaceCamera;
             can.worldCamera = cam;
+
+            can.transform.GetChild(0).gameObject.GetComponent< PPText >().name = "Score" + device.surnameDevice;
+            can.transform.GetChild(1).gameObject.GetComponent< Text >().text = device.surnameDevice;
 
             can.SendMessage("InitKey", device);
             can.SendMessage("TheStart", layer);
@@ -94,7 +103,7 @@ public class GameLogique : MonoBehaviour
             isNotCloseGame = false;
             //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
             foreach (var device in ldb){
-                device.Stop();
+                //device.StopGame();
                 if(PlayerPrefs.GetInt("Score" + device.surnameDevice) > PlayerPrefs.GetInt("Highscore" + device.surnameDevice));
                     PlayerPrefs.SetInt("Highscore" + device.surnameDevice, PlayerPrefs.GetInt("Score" + device.surnameDevice));
             } 
@@ -102,11 +111,26 @@ public class GameLogique : MonoBehaviour
         }
     }
 
-    public void AddScore(string nameDevice){
-        PlayerPrefs.SetInt("Score" + nameDevice, PlayerPrefs.GetInt("Score"+ nameDevice) + GetScore(nameDevice));
-    }
-
-    public int GetScore(string nameDevice){
-        return 100 * PlayerPrefs.GetInt("Mult" + nameDevice);
+    public void AddScore(string nameDevice, int typePrecision){
+        int score = 0;
+        switch (typePrecision) {
+            case 1:
+                score = 200;
+                break;
+            case 2:
+                score = 100;
+                break;
+            case 3:
+                score = 75;
+                break;
+            case 4:
+                score = 50;
+                break;
+            default:
+                score = 0;
+                break;
+        }
+        score *= PlayerPrefs.GetInt("Mult" + nameDevice);
+        PlayerPrefs.SetInt("Score" + nameDevice, PlayerPrefs.GetInt("Score"+ nameDevice) + score);
     }
 }

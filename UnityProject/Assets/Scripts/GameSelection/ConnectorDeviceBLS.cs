@@ -7,7 +7,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using HoV;
 
-namespace blueConnect {
+namespace BlueConnect {
     class DataCommunicationHelper
     {
         public string receivedData;
@@ -51,7 +51,7 @@ namespace blueConnect {
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_GetDevicesNamesFast();
 
-        public void Start(MonoBehaviour caller){
+        public void StartGame(MonoBehaviour caller){
             Marshal.PtrToStringAnsi(BTM_GetDevicesNamesFast());
             dataReceiver = new UnityBackgroundWorker(caller, BGW_ReceiveData, BGW_ReceiveData_Progress, BGW_ReceiveData_Done, dataReceiverHelper);
             isRunning = true;
@@ -60,7 +60,6 @@ namespace blueConnect {
                 string status;
                 do{
                     status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
-                    Debug.Log("start " + status);
                 } while(! status.Contains("Connected"));
 
                 string validation;
@@ -87,9 +86,39 @@ namespace blueConnect {
             }
         }
 
-        public void Stop() {
+        public void StopGame() {
             if(isRunning)
                 isRunning = false;
+        }
+
+        public void Deconnect(){
+            try {
+                hm.MonitorIn();
+                string status;
+                do{
+                    status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
+                } while(! status.Contains("Connected"));
+
+                string validation;
+                validation = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
+                if(validation.Contains("I am connected with " + FinderDevicesBLS.nameGame)){
+                    do{
+                        Marshal.PtrToStringAnsi(BTM_SendDataFast("End Connection"));
+                        Thread.Sleep(1200);
+                        validation = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
+                    } while(!validation.Contains("I am available"));
+                    Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());      
+                    dataReceiver.Run();
+                }
+                else {
+                    isRunning = false;
+                }
+ 
+            } catch (Exception e) {
+                Debug.Log(e.Message);
+            } finally {
+                hm.MonitorOut();
+            }
         }
 
         private void SplitValueArduino(String values) {
@@ -132,9 +161,7 @@ namespace blueConnect {
                         Thread.Sleep(100);
                         e.Progress++;
                         Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
-                        
                     }
-                    
                 }
                 catch (Exception error) {
                     e.HasError = true;
@@ -142,7 +169,6 @@ namespace blueConnect {
                 }
                 hm.MonitorOut();
             }
-
             bool endGame = true;
 
             hm.MonitorIn();     
@@ -150,7 +176,6 @@ namespace blueConnect {
                 try {
                     Thread.Sleep(200);
                     string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
-                    Debug.Log("End " + status);
                     if(status.Contains("Connected")){
                         string validation;
                         do{
@@ -169,13 +194,10 @@ namespace blueConnect {
             hm.MonitorOut();
             Debug.Log("endThread");
         }
-        void BGW_ReceiveData_Progress(object CustomData, int Progress)
-        {
+        void BGW_ReceiveData_Progress(object CustomData, int Progress) {
             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
             SplitValueArduino(temp.receivedData);
         }
-        void BGW_ReceiveData_Done(object CustomData, UnityBackgroundWorkerInformation Information) {
-            
-        }
+        void BGW_ReceiveData_Done(object CustomData, UnityBackgroundWorkerInformation Information) {}
     }
 }

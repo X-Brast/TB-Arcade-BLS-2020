@@ -370,7 +370,7 @@ GameObject:
   - component: {fileID: 2033356443}
   - component: {fileID: 2033356442}
   m_Layer: 0
-  m_Name: GameLogique
+  m_Name: GameLogic
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

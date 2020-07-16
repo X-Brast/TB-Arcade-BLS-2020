@@ -17,4 +17,10 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/HeartHero/HeartHeroClassement.unity
     guid: 506ff9216ca5b8443aaaae6272e71e39
+  - enabled: 1
+    path: Assets/Scenes/RaceHeart/RaceHeart.unity
+    guid: e6098e0cc9c0ec54887fffe4d5699748
+  - enabled: 1
+    path: Assets/Scenes/RaceHeart/RaceHeartClassement.unity
+    guid: c6d5b5f62944f37479f69141e87badf0
   m_configObjects: {}
