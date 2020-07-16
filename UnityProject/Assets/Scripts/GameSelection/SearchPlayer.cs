@@ -10,8 +10,16 @@ public class SearchPlayer : MonoBehaviour
     public Canvas canvas;
 
     private LinkedList<ConnectorDeviceBLS> ldbFinished;
-    private int[] colorChoosen;
-    private int[] spriteChoosen;
+    private Color[] colorsPlayer = {
+        new Color(0.8f, 0.92f, 0.88f), 
+        new Color(0.09f, 0.37f, 0.29f),
+        new Color(0f, 0.85f, 0.61f),
+        new Color(0.95f, 0.2f, 0f),
+        new Color(1f, 0.62f, 0.52f),
+        new Color(0.62f, 0.45f, 1f)};
+    private bool[] colorUsed = {false,false,false,false,false,false};
+    private Color[] spriteForUse;
+    private Color[] spriteUsed;
 
     private int nbPlayer = 0;
     private const float delay = 5.0f;
@@ -47,11 +55,22 @@ public class SearchPlayer : MonoBehaviour
         GameObject go = Instantiate(panelPlayer, position, Quaternion.identity);
         go.transform.SetParent(canvas.transform, false);
         
-        go.GetComponent<Image>().color = new Color(
-                                            Random.Range(0f, 1f), 
-                                            Random.Range(0f, 1f), 
-                                            Random.Range(0f, 1f)
-                                        );
+        if(device.isColorDefined){
+            int idColor;
+            do{
+                idColor = Random.Range(0, colorUsed.Length);
+            } while(colorUsed[idColor]);
+            colorUsed[idColor] = true;
+            device.idColor = idColor;
+            device.isColorDefined = true;
+            device.colorPlayer = colorsPlayer[idColor];
+            go.GetComponent<Image>().color = colorsPlayer[idColor];
+        } else
+        {
+            go.GetComponent<Image>().color = device.colorPlayer;
+            colorUsed[device.idColor] = true;
+        }
+
         GameObject imagePlayer = go.transform.GetChild(0).gameObject;
         GameObject textPlayer = go.transform.GetChild(1).gameObject;
         

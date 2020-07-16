@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.UI;
 using BlueConnect;
 
 public class RaceGameLogic : MonoBehaviour
@@ -17,7 +18,17 @@ public class RaceGameLogic : MonoBehaviour
     void Start() {
         //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
-
+        ldb.First.Value.colorPlayer = new Color(0.8f, 0.92f, 0.88f);
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Bobo"));
+        ldb.First.Value.colorPlayer = new Color(0.09f, 0.37f, 0.29f);
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Carole"));
+        ldb.First.Value.colorPlayer = new Color(0f, 0.85f, 0.61f);
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Inconnu"));
+        ldb.First.Value.colorPlayer = new Color(0.95f, 0.2f, 0f);
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Richard"));
+        ldb.First.Value.colorPlayer = new Color(1f, 0.62f, 0.52f);
+        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Jessica"));
+        ldb.First.Value.colorPlayer = new Color(0.62f, 0.45f, 1f);
         
         nbPlayer = ldb.Count;
 
@@ -43,11 +54,6 @@ public class RaceGameLogic : MonoBehaviour
 
             Camera cam = Instantiate(camera, new Vector3(0, 0,-10), Quaternion.identity);
             cam.rect = new Rect(0.0f, w * counter, 1.0f, w);
-            cam.backgroundColor = new Color(
-                                        Random.Range(0f, 1f), 
-                                        Random.Range(0f, 1f), 
-                                        Random.Range(0f, 1f)
-                                    );
             cam.cullingMask = (1 << layer) + (1 << LayerMask.NameToLayer("UI"));
 
             Canvas can = Instantiate(canvas, new Vector3(0, 0, 0), Quaternion.identity);
@@ -55,6 +61,7 @@ public class RaceGameLogic : MonoBehaviour
             can.worldCamera = cam;
 
             can.transform.GetChild(0).gameObject.layer = layer;
+            can.transform.GetChild(0).gameObject.GetComponent< Image >().color = device.colorPlayer;
             can.transform.GetChild(0).GetChild(0).gameObject.layer = layer;
             can.transform.GetChild(0).GetChild(1).gameObject.layer = layer;
             can.transform.GetChild(0).GetChild(1).gameObject.GetComponent< Ambulance >().speed = speed;
@@ -100,16 +107,46 @@ public class RaceGameLogic : MonoBehaviour
         return PlayerPrefs.GetInt("RaceMult" + nameDevice);
     }
 
-    public void RaceFinish(){
+    private void DisplayScore(GameObject parent, int position){
+        string namePosition;
+        switch (position) {
+            case 1:
+                namePosition = "Premier";
+                break;
+            case 2:
+                namePosition = "Second";
+                break;
+            case 3:
+                namePosition = "Troisième";
+                break;
+            case 4:
+                namePosition = "Quatrième";
+                break;
+            case 5:
+                namePosition = "Cinquième";
+                break;
+            case 6:
+                namePosition = "Sixième";
+                break;
+            default:
+                namePosition = "Inconnu";
+                break;
+        }
+        parent.transform.GetChild(0).gameObject.active = true;
+        parent.transform.GetChild(0).gameObject.GetComponent< Text >().text = namePosition;
+    }
+
+    public void RaceFinish(GameObject parent, string nameDevice){
         ++nbPlayerFinish;
-        Debug.Log(nbPlayerFinish);
+        DisplayScore(parent, nbPlayerFinish);
+        PlayerPrefs.SetInt("RaceScore" + nameDevice, (int)Time.fixedTime - PlayerPrefs.GetInt("RaceScore" + nameDevice));
+        if(PlayerPrefs.GetInt("RaceScore" + nameDevice) > PlayerPrefs.GetInt("RaceHighscore" + nameDevice));
+            PlayerPrefs.SetInt("RaceHighscore" + nameDevice, PlayerPrefs.GetInt("RaceScore" + nameDevice));
+
         if(nbPlayerFinish == nbPlayer){
             //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
             foreach (var device in ldb){
                 //device.StopGame();
-                PlayerPrefs.SetInt("RaceScore" + device.surnameDevice, (int)Time.fixedTime - PlayerPrefs.GetInt("RaceScore" + device.surnameDevice));
-                if(PlayerPrefs.GetInt("RaceScore" + device.surnameDevice) > PlayerPrefs.GetInt("RaceHighscore" + device.surnameDevice));
-                    PlayerPrefs.SetInt("RaceHighscore" + device.surnameDevice, PlayerPrefs.GetInt("RaceScore" + device.surnameDevice));
             } 
             SceneManager.LoadScene("RaceHeartClassement");
         }

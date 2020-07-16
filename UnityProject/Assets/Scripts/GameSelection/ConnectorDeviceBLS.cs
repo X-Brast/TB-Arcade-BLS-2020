@@ -20,6 +20,10 @@ namespace BlueConnect {
         private Boolean isRunning = false;
         private HoareMonitor hm = HoareMonitor.Instance;
 
+        public int idColor {get; set;}
+        public Color colorPlayer {get; set;}
+        public bool isColorDefined {get; set;} = false;
+
         public String nameDevice {get;}
         public String surnameDevice {get;}
         public Queue<int> data {get; set;}

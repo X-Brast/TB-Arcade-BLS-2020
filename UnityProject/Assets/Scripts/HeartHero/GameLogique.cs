@@ -18,11 +18,17 @@ public class GameLogique : MonoBehaviour
     {
         //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
+        ldb.First.Value.colorPlayer = new Color(0.76f, 0.88f, 0.84f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Bobo"));
+        ldb.First.Value.colorPlayer = new Color(0.09f, 0.37f, 0.29f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Carole"));
+        ldb.First.Value.colorPlayer = new Color(0f, 0.85f, 0.61f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Inconnu"));
+        ldb.First.Value.colorPlayer = new Color(0.95f, 0.2f, 0f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Richard"));
+        ldb.First.Value.colorPlayer = new Color(1f, 0.62f, 0.52f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Jessica"));
+        ldb.First.Value.colorPlayer = new Color(0.62f, 0.45f, 1f);
 
         int nbPlayer = ldb.Count;
 
@@ -46,11 +52,7 @@ public class GameLogique : MonoBehaviour
 
             Camera cam = Instantiate(camera, new Vector3(0, 0,-10), Quaternion.identity);
             cam.rect = new Rect(w * counter, 0.0f, w, 1.0f);
-            cam.backgroundColor = new Color(
-                                        Random.Range(0f, 1f), 
-                                        Random.Range(0f, 1f), 
-                                        Random.Range(0f, 1f)
-                                    );
+            cam.backgroundColor = device.colorPlayer;
             cam.cullingMask = (1 << layer) + (1 << LayerMask.NameToLayer("UI"));
 
             Canvas can = Instantiate(canvas, new Vector3(0, 0, 0), Quaternion.identity);

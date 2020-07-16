@@ -12,6 +12,7 @@ public class Ambulance : MonoBehaviour
     private Rigidbody2D rb;
 
     private bool isCorrectTempo = true;
+    private bool isFinish = false;
 
     private float delay = 1.0f;
     private float timeCurrent = 0.0f;
@@ -40,7 +41,7 @@ public class Ambulance : MonoBehaviour
             Moving(value); 
             isCorrectTempo = false;   
         }
-        if(timeCurrent + delay < Time.fixedTime){
+        if(timeCurrent + delay < Time.fixedTime && !isFinish){
             isCorrectTempo = true;
             rb.velocity = new Vector2(speed, 0);
             timeCurrent = Time.fixedTime; 
@@ -69,9 +70,10 @@ public class Ambulance : MonoBehaviour
     }
 
     void OnTriggerExit2D(Collider2D col){
-        if(col.gameObject.tag == "FinishLine"){
+        if(col.gameObject.tag == "FinishLine" && !isFinish){
+            isFinish = true;
             rb.velocity = new Vector2(0, 0);
-            gl.RaceFinish();
+            gl.RaceFinish(this.transform.parent.gameObject, device.surnameDevice);
         }
     }
 }

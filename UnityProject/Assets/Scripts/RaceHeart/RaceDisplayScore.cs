@@ -15,11 +15,17 @@ public class RaceDisplayScore : MonoBehaviour
         //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
         LinkedList<ConnectorDeviceBLS> ldb = new LinkedList<ConnectorDeviceBLS>();
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
+        ldb.First.Value.colorPlayer = new Color(0.8f, 0.92f, 0.88f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Bobo"));
+        ldb.First.Value.colorPlayer = new Color(0.09f, 0.37f, 0.29f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Carole"));
+        ldb.First.Value.colorPlayer = new Color(0f, 0.85f, 0.61f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Inconnu"));
+        ldb.First.Value.colorPlayer = new Color(0.95f, 0.2f, 0f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Richard"));
+        ldb.First.Value.colorPlayer = new Color(1f, 0.62f, 0.52f);
         ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Jessica"));
+        ldb.First.Value.colorPlayer = new Color(0.62f, 0.45f, 1f);
         int nbPlayer = ldb.Count;
 
         if(nbPlayer == 0){
@@ -41,11 +47,7 @@ public class RaceDisplayScore : MonoBehaviour
             GameObject go = Instantiate(panelScorePlayer, position, Quaternion.identity);
             go.transform.SetParent(canvas.transform, false);
             
-            go.GetComponent<Image>().color = new Color(
-                                                Random.Range(0f, 1f), 
-                                                Random.Range(0f, 1f), 
-                                                Random.Range(0f, 1f)
-                                            );
+            go.GetComponent<Image>().color = device.colorPlayer;
             GameObject namePlayer       = go.transform.GetChild(0).gameObject;
             GameObject timePlayer       = go.transform.GetChild(2).gameObject;
             GameObject goodHitPlayer    = go.transform.GetChild(5).gameObject;
