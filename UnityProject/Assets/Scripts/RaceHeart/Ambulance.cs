@@ -5,7 +5,7 @@ using BlueConnect;
 
 public class Ambulance : MonoBehaviour
 {
-    public ConnectorDeviceBLS device;
+    public CommunicationDeviceBLS device;
     public float speed;
 
     private RaceGameLogic gl;
@@ -14,8 +14,9 @@ public class Ambulance : MonoBehaviour
     private bool isCorrectTempo = true;
     private bool isFinish = false;
 
-    private float delay = 1.0f;
+    private float delay = 0.55f;
     private float timeCurrent = 0.0f;
+    private float badDelay = 1.5f;
 
     void Awake(){
         gl = GameObject.Find("GameLogic").GetComponent<RaceGameLogic>();
@@ -41,6 +42,11 @@ public class Ambulance : MonoBehaviour
             Moving(value); 
             isCorrectTempo = false;   
         }
+        if(timeCurrent + badDelay < Time.fixedTime && !isFinish){
+            isCorrectTempo = false;
+            rb.velocity = new Vector2(speed, 0);
+            gl.BadStreak(device.surnameDevice);
+        }
         if(timeCurrent + delay < Time.fixedTime && !isFinish){
             isCorrectTempo = true;
             rb.velocity = new Vector2(speed, 0);
@@ -50,23 +56,26 @@ public class Ambulance : MonoBehaviour
 
     void Moving(int value){
         int mult = gl.GetMult(device.surnameDevice);
+        float newSpeed = speed;
         switch(value){
             case 1:
-                rb.velocity = new Vector2(speed + 2 * mult, 0);
+                newSpeed += 1f * mult;
                 break;
             case 2:
-                rb.velocity = new Vector2(speed + 1 * mult, 0);
+                newSpeed += 0.7f * mult;
                 break;
             case 3:
-                rb.velocity = new Vector2(speed + 0.75f * mult, 0);
+                newSpeed += 0.5f * mult;
                 break;
             case 4:
-                rb.velocity = new Vector2(speed + 0.5f * mult, 0);
+                newSpeed += 0.2f * mult;
                 break;
             default:
-                rb.velocity = new Vector2(speed, 0);
+                newSpeed += 0;
                 break;
         }
+        newSpeed /= (isCorrectTempo ? 1 : 2);
+        rb.velocity = new Vector2(newSpeed , 0);
     }
 
     void OnTriggerExit2D(Collider2D col){

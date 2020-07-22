@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using UnityEngine.UI;
 using BlueConnect;
 
@@ -9,40 +8,38 @@ public class RaceGameLogic : MonoBehaviour
 {
     public Canvas canvas;
     public Camera camera;
+    public GameObject loaderScene;
+    public Canvas loadCanvas;
 
-    private LinkedList<ConnectorDeviceBLS> ldb = new LinkedList<ConnectorDeviceBLS>();
     private int nbPlayer;
     private int nbPlayerFinish = 0;
 
     // Start is called before the first frame update
     void Start() {
-        //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Monstro"));
-        ldb.First.Value.colorPlayer = new Color(0.8f, 0.92f, 0.88f);
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Bobo"));
-        ldb.First.Value.colorPlayer = new Color(0.09f, 0.37f, 0.29f);
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Carole"));
-        ldb.First.Value.colorPlayer = new Color(0f, 0.85f, 0.61f);
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Inconnu"));
-        ldb.First.Value.colorPlayer = new Color(0.95f, 0.2f, 0f);
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Richard"));
-        ldb.First.Value.colorPlayer = new Color(1f, 0.62f, 0.52f);
-        ldb.AddFirst(new ConnectorDeviceBLS("BLS2020HC05HESAV01", "Jessica"));
-        ldb.First.Value.colorPlayer = new Color(0.62f, 0.45f, 1f);
-        
-        nbPlayer = ldb.Count;
+        LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();   
 
-        if(nbPlayer == 0){
-            SceneManager.LoadScene(1);
+        if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0){
+            loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
             return;
         }
 
-        float w = 1.0f/nbPlayer;
-        float speed = 0.1f * nbPlayer;
-        int counter = 0;
-        foreach (var device in ldb) {
-            //device.StartGame(this);
+        StartCoroutine(LoadPanelPlayerGaming());
+    }
 
+    IEnumerator LoadPanelPlayerGaming(){
+        LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
+
+        // on lance toutes les connexions Si problème on ne va pas créer un panneau pour le joueur
+        foreach (var device in ldb) {
+            device.StartGame(this);
+        }
+
+        nbPlayer = ldb.Count;
+        float w = 1.0f/nbPlayer;
+        float speed = 0;
+        int counter = 0;
+
+        foreach (var device in ldb) {
             int layer = LayerMask.NameToLayer("Player" + (counter+1).ToString());
             
             PlayerPrefs.SetInt("RaceHighstreak" + device.surnameDevice, 0);
@@ -69,6 +66,10 @@ public class RaceGameLogic : MonoBehaviour
 
             ++counter;
         }
+
+        yield return new WaitForSeconds(3.0f);
+
+        loadCanvas.enabled = false;
     }
 
     public void GoodStreak(string nameDevice){
@@ -144,11 +145,11 @@ public class RaceGameLogic : MonoBehaviour
             PlayerPrefs.SetInt("RaceHighscore" + nameDevice, PlayerPrefs.GetInt("RaceScore" + nameDevice));
 
         if(nbPlayerFinish == nbPlayer){
-            //LinkedList<ConnectorDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
+            LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
             foreach (var device in ldb){
-                //device.StopGame();
+                device.StopGame();
             } 
-            SceneManager.LoadScene("RaceHeartClassement");
+            loaderScene.GetComponent<LoaderScene>().LoadLevelScore(4);
         }
     }
 }

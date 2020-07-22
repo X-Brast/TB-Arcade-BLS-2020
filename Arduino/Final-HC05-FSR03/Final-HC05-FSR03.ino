@@ -20,12 +20,12 @@ LiquidCrystal       lcd(12,11,7,6,5,4);
 
 const byte          TRIGGER_PIN_HC    = 2;
 const byte          ECHO_PIN_HC       = 3;
-const byte          TRIGGER_PIN_US    = 10;
-const byte          ECHO_PIN_US       = 13;
+const byte          BUTTON_PIN_MOVE   = 13;
+const byte          BUTTON_PIN_SELECT = 10;
 const byte          FRS_PIN           = A0;
 const unsigned long MEASURE_TIMEOUT   = 25000UL;
 const float         SOUND_SPEED       = 340.0 / 1000; // Vitesse du son en mm/s
-const String        nameArduino       = "Anne"; // nom unique entre tous les arduinos et application Unity
+const String        ARDUINO_NAME      = "Alex"; // nom unique entre tous les arduinos et application Unity
 
 unsigned int        measureHC;
 unsigned int        distanceHC;
@@ -37,25 +37,28 @@ String              nameBlocGame;
 unsigned long       startTime;
 unsigned long       endTime;
 
-boolean isDown = true;
-int previousDistance = 0;
-byte codeSuccess = 0;
-byte lastCodeSuccess = 0;
-byte timeDisplayScore = 0;
-
+boolean             isDown = true;
+int                 previousDistance  = 0;
+byte                codeSuccess       = 0;
+byte                lastCodeSuccess   = 0;
+byte                timeDisplayScore  = 0;
 boolean             isConnect         = false;
 boolean             isGaming          = false;
 boolean             isStartProtocole  = false;
 
-String firstLine = "Salut, je suis " + nameArduino;
-String secondLine = "";
-String thirdLine = "";
-String fourthLineBegin = "";
-String fourthLineEnd = "";
-boolean isChangeDisplay = true;
+String              firstLine         = "Salut, je suis " + ARDUINO_NAME;
+String              secondLine        = "";
+String              thirdLine         = "";
+String              fourthLineBegin   = "";
+String              fourthLineEnd     = "";
+boolean             isChangeDisplay   = true;
+
+int fsrReading;
+int pressure;
+int basicPressure;
 
 void updateLCD(){
-  if(isChangeDisplay){
+if(isChangeDisplay){
     isChangeDisplay = false;
     lcd.clear();
     lcd.setCursor(0,0);
@@ -99,12 +102,10 @@ void initConnection(){
     isStartProtocole = true;
     String value = bluetooth.readString();
     bluetooth.flush();
-    firstLine = value;
-    isChangeDisplay = true;
     if(value.equals("Hello, I search BLS device")){
       lcd.setCursor(0,1);
       lcd.print("Connexion en cours");
-      bluetooth.println("I Am BLS Device. My Name Is " + nameArduino + " Terminate.");
+      bluetooth.println("I Am BLS Device. My Name Is " + ARDUINO_NAME + " Terminate.");
       while(isStartProtocole){
         if(bluetooth.available() > 0){
           value = bluetooth.readString();
@@ -124,30 +125,36 @@ void initConnection(){
 }
 
 void checkCorrect(){
-  int idealDistance = 60;
-  float perfect = 0.95;
-  float excellent = 0.85;
-  float good = 0.75;
-  float correct = 0.65;
+  int idealDistance = 55;
+  byte perfect = 3;
+  byte excellent = perfect + 3;
+  byte good = excellent + 3;
+  byte correct = good + 3;
 
   if(isDown){
-
+    int diffPressure = pressure - basicPressure;
+    /*firstLine = pressure;
+    firstLine += " - ";
+    firstLine += basicPressure;
+    firstLine += " = ";
+    firstLine += diffPressure;
+    isChangeDisplay = true;*/
     int diffDistance = maxDistance - distance;
     
     if(previousDistance * 0.95 > diffDistance){
-      if(diffDistance >= idealDistance * perfect && diffDistance <= idealDistance / perfect){
+      if(diffDistance >= idealDistance - perfect && diffDistance <= idealDistance + perfect){
         codeSuccess = 1;
         isDown = false;
       }
-      else if(diffDistance >= idealDistance * excellent && diffDistance <= idealDistance / excellent){
+      else if(diffDistance >= idealDistance - excellent && diffDistance <= idealDistance + excellent){
         codeSuccess = 2;
         isDown = false;
       }
-      else if(diffDistance >= idealDistance * good && diffDistance <= idealDistance / good){
+      else if(diffDistance >= idealDistance - good && diffDistance <= idealDistance + good){
         codeSuccess = 3;
         isDown = false;
       }
-      else if(diffDistance >= idealDistance * correct && diffDistance <= idealDistance / correct){
+      else if(diffDistance >= idealDistance - correct && diffDistance <= idealDistance + correct){
         codeSuccess = 4;
         isDown = false;
       }
@@ -166,24 +173,25 @@ void checkCorrect(){
 }
 
 void collectData(){
-  digitalWrite(TRIGGER_PIN_US, HIGH);
-  delayMicroseconds(50);
-  digitalWrite(TRIGGER_PIN_US, LOW); 
-  measureUS = pulseIn(ECHO_PIN_US, HIGH, MEASURE_TIMEOUT);
-  distanceUS = measureUS * SOUND_SPEED / 2;
   
   digitalWrite(TRIGGER_PIN_HC, HIGH);
   delayMicroseconds(50);
   digitalWrite(TRIGGER_PIN_HC, LOW);
   measureHC = pulseIn(ECHO_PIN_HC, HIGH, MEASURE_TIMEOUT);
-  distanceHC = measureHC / 2.0 * SOUND_SPEED;
+  distance = measureHC / 2.0 * SOUND_SPEED;
 
-  distance = (distanceHC + distanceUS) / 2;
+  fsrReading = analogRead(FRS_PIN);
+  pressure = map(fsrReading, 0, 1023, 0, 5000);
 }
 
 void sendData(){
   collectData(); 
   checkCorrect();
+
+  firstLine = maxDistance;
+  firstLine += " ";
+  firstLine += distance;
+  isChangeDisplay = true;
 
   if(!thirdLine.equals("Partie en cours")){
     thirdLine = "Partie en cours";
@@ -204,7 +212,7 @@ void sendData(){
     }
   }
 
-  if(codeSuccess > 0){
+  /*if(codeSuccess > 0){
     isChangeDisplay = true;
     timeDisplayScore = 5;
     lastCodeSuccess = codeSuccess;
@@ -233,9 +241,9 @@ void sendData(){
       }
     }
     timeDisplayScore -= 1;  
-  }
-  
-  bluetooth.println("V" + String(isDown) + String(codeSuccess));
+  }*/
+  // if(codeSuccess != 0)
+    bluetooth.println("V" + String(isDown) + String(codeSuccess));
 }
 
 void setup() {
@@ -244,11 +252,10 @@ void setup() {
 
   pinMode(TRIGGER_PIN_HC, OUTPUT);
   digitalWrite(TRIGGER_PIN_HC, LOW);
-  pinMode(ECHO_PIN_US, INPUT);
-
-  pinMode(TRIGGER_PIN_US, OUTPUT);
-  digitalWrite(TRIGGER_PIN_US, LOW);
   pinMode(ECHO_PIN_HC, INPUT);
+
+  pinMode(BUTTON_PIN_MOVE, INPUT);
+  pinMode(BUTTON_PIN_SELECT, INPUT);
 }
 
 boolean unknownCommand = true;
@@ -262,8 +269,6 @@ void loop() {
     if(bluetooth.available() > 0){
       String value = bluetooth.readString();
       bluetooth.flush();
-      firstLine = value;
-      isChangeDisplay = true;
       if(value.equals("End Connection")){
         isConnect = false;
         isGaming = false;
@@ -310,6 +315,15 @@ void loop() {
       bluetooth.println("I am connected with " + nameBlocGame);
       collectData();
       maxDistance = (maxDistance + distance) / 2;
+      basicPressure = (basicPressure + pressure) / 2;
+      firstLine = maxDistance;
+      isChangeDisplay = true;
+      int ss1 = digitalRead(BUTTON_PIN_MOVE);
+      if(ss1 == HIGH)
+        bluetooth.println("MOVE");
+      int ss2 = digitalRead(BUTTON_PIN_SELECT);
+      if(ss2 == HIGH)
+        bluetooth.println("PRESS");
     }
   }
   else {

@@ -5,10 +5,10 @@ using BlueConnect;
 
 public class Activator : MonoBehaviour
 {
-    public ConnectorDeviceBLS device;
+    public CommunicationDeviceBLS device;
     
     private GameObject note;
-    private GameLogique gm;
+    private HeroGameLogique gm;
     private bool active = false;
     private bool noteExist = false;
     private Color old;
@@ -16,7 +16,7 @@ public class Activator : MonoBehaviour
 
     void Awake(){
         sr = GetComponent<SpriteRenderer>();
-        gm = GameObject.Find("GameLogic").GetComponent<GameLogique>();
+        gm = GameObject.Find("HeroGameLogic").GetComponent<HeroGameLogique>();
     }
 
     // Start is called before the first frame update
@@ -29,6 +29,7 @@ public class Activator : MonoBehaviour
     void Update()
     {
         if(device != null && device.data.Count > 0) {
+            Debug.Log("Entry");
             StartCoroutine(Pressed());
             int value = device.data.Dequeue();
 
@@ -42,6 +43,20 @@ public class Activator : MonoBehaviour
                 gm.ResetStreak(device.surnameDevice);
             }
             
+        }
+        if(Input.GetKeyDown(KeyCode.F)){
+            StartCoroutine(Pressed());
+            int value = 1;
+
+            if(active) {
+                noteExist = false;
+                gm.AddScore(device.surnameDevice, value);
+                gm.AddStreak(device.surnameDevice);
+                Destroy(note);
+            }
+            else {
+                gm.ResetStreak(device.surnameDevice);
+            }
         }
     }
 
