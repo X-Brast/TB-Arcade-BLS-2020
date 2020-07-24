@@ -69,7 +69,7 @@ namespace BlueConnect {
             dataReceiver = new UnityBackgroundWorker(caller, CheckDeviceBegin, CheckDeviceProgress, CheckDeviceDone, dataReceiverHelper);
             try {
                 isRunning = true;
-                dataReceiver.Run();                
+                dataReceiver.Run();               
             } catch (Exception e) {}
         }
 
@@ -107,24 +107,25 @@ namespace BlueConnect {
         * @param    CustomData  information lié au Bluetooth
         * @param    e           indique au thread qu'il y a eu une modification
         */
-        void CheckDeviceBegin(object CustomData, UnityBackgroundWorkerArguments e)
-        {
+        void CheckDeviceBegin(object CustomData, UnityBackgroundWorkerArguments e) {
             LinkedList<CommunicationDeviceBLS> ldb = new LinkedList<CommunicationDeviceBLS>(fdb.GetListDevicesBLS());
+            Debug.Log("Nb device " + ldb.Count);
             string data;
             hm.MonitorIn();
-            foreach(var device in ldb){
-                if(!device.isRunning){
+            foreach(var device in ldb) {
+                if(!device.isRunning) {
                     try {
                         Thread.Sleep(50);
-                        string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(device.nameDevice));;
+                        string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(device.nameDevice));
+                        Debug.Log("CHeck " + status);
                         if(status.Contains("Connected")){
                             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
                             // on va vider le buffer totalement du module bluetooth 
                             // BTM_ReceiveDataFast ne recupère que les 127 permiers charactères
                             data = "";
-                            do{
+                            do {
                                 data += Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(device.nameDevice));
-                            } while(data.Length % 127 == 0);
+                            } while(data.Length % 127 == 0 && data.Length < 1270);
 
                             temp.receivedData = data; 
                             temp.device = device; 
@@ -141,7 +142,6 @@ namespace BlueConnect {
                 }
             }
             hm.MonitorOut();
-
         }
 
         /**
@@ -151,7 +151,7 @@ namespace BlueConnect {
         */
         void CheckDeviceProgress(object CustomData, int Progress) {
             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
-            if(!temp.receivedData.Contains("I am connected with " + FinderDevicesBLS.nameGame)){
+            if(!temp.receivedData.Contains("I am connected with " + FinderDevicesBLS.NAME_GAME)) {
                 Debug.Log("delete device");
                 fdb.RemoveDevice(temp.device);
             }

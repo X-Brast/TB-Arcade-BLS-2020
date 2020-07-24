@@ -25,6 +25,9 @@ namespace HeartHero {
         private bool active     = false; // Savoir si un collision est en cours
         private bool noteExist  = false;
 
+        private int timeStart;
+        private int counter = 0;
+
         void Awake(){
             sr = GetComponent<SpriteRenderer>();
             hgm = GameObject.Find("GameLogic").GetComponent<HeroGameLogic>();
@@ -32,6 +35,8 @@ namespace HeartHero {
 
         void Start() {
             old = sr.color;
+            timeStart = (int)(Time.time * 1000);
+            Debug.Log(timeStart);
         }
 
         /**
@@ -39,33 +44,38 @@ namespace HeartHero {
         */
         void Update() {
             if(device != null && device.data.Count > 0) {
+                counter++;
+                Debug.Log("activator " + device.data.Count + counter);
                 StartCoroutine(Pressed());
-                int value = device.data.Dequeue();
 
-                if(active) {
-                    noteExist = false;
-                    hgm.AddScore(device.surnameDevice, value);
-                    hgm.AddStreak(device.surnameDevice);
-                    Destroy(note);
-                }
-                else {
-                    hgm.ResetStreak(device.surnameDevice);
-                }
-                
+                (byte value, uint time)  = device.data.Dequeue();
+
+                StartCoroutine(hit(value, time));
             }
-            /*if(Input.GetKeyDown(KeyCode.F)) {
-                StartCoroutine(Pressed());
-                int value = 1;
+        }
 
-                if(active) {
-                    noteExist = false;
-                    hgm.AddScore(device.surnameDevice, value);
-                    hgm.AddStreak(device.surnameDevice);
-                    Destroy(note);
-                }
-                else
-                    hgm.ResetStreak(device.surnameDevice);
-            }*/
+        /**
+        * Défini si le hit est bon ou mauvaise
+        * @param    value  La precision du hit
+        * @param    time   Le temps où a été enregistré le hit
+        */
+        IEnumerator hit(byte value, uint time){
+            int tmp = (int)(Time.time * 1000 - timeStart - time);
+
+            if(tmp < 0){
+                float waitTime = tmp / 1000.0f * -1.0f;
+                yield return new WaitForSeconds(waitTime);
+            }
+
+            if(active) {
+                noteExist = false;
+                hgm.AddScore(device.surnameDevice, value);
+                hgm.AddStreak(device.surnameDevice);
+                Destroy(note);
+            }
+            else {
+                hgm.ResetStreak(device.surnameDevice);
+            }
         }
 
         /**
@@ -76,7 +86,7 @@ namespace HeartHero {
             if(col.gameObject.tag=="Note"){ 
                 noteExist = true;
                 active = true;
-                note=col.gameObject;
+                note = col.gameObject;
             }
         }
 
@@ -87,6 +97,7 @@ namespace HeartHero {
         void OnTriggerExit2D(Collider2D col){
             active = false;
             if(col.gameObject.tag=="Final"){
+                Debug.Log(counter);
                 hgm.EndGame();
             }
             if(noteExist){

@@ -20,8 +20,8 @@ namespace HeartHero {
         // Definit dans l'editeur Unity
         public GameObject panelScorePlayer;
         public Canvas canvas; // Canvas principale. Utile pour position les panel correctement
-        public GameObject loaderScene; // Permet de changer de Scene
-
+        
+        private LoaderScene loaderScene; // Permet de changer de Scene
         private List<GameObject> buttons;
 
         private CheckDeviceBLSConnected cdbc = CheckDeviceBLSConnected.Instance;
@@ -33,6 +33,8 @@ namespace HeartHero {
         * Il va créer un panel pour joueur pour que ceci puissent voir son score.
         */
         void Start() {
+            loaderScene = GameObject.Find("LoaderScene").GetComponent<LoaderScene>();
+
             buttons = new List<GameObject>();
             buttons.Add(GameObject.Find("RestartButton")); 
             buttons.Add(GameObject.Find("SelectionGameButton"));
@@ -42,7 +44,7 @@ namespace HeartHero {
             LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
 
             if(ldb.Count == 0){
-                loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
+                loaderScene.LoadLevelSelection(0);
                 return;
             }
 
@@ -116,6 +118,9 @@ namespace HeartHero {
             }
 
             isFinishLoopFindCheck = true;
+
+            if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0)
+                loaderScene.LoadLevelSelection(0);
         }
     }
 }

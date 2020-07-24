@@ -7,6 +7,7 @@
  */
 
 using BlueConnect;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -20,6 +21,12 @@ namespace GameSelection {
         public Canvas canvas; // Permet de définir le parent du panelPlayer
 
         private const float DELAY = 1.0f;
+
+        // FinderDevicesBLS.NB_MAX_PLAYER
+        private GameObject[] goPlayer = new GameObject[FinderDevicesBLS.NB_MAX_PLAYER];
+        private bool[] isHavePlayer = new bool[FinderDevicesBLS.NB_MAX_PLAYER];
+        private int[] posPlayer = {150,-150,450,-450,750,-750};
+        private CommunicationDeviceBLS[] cdb = new CommunicationDeviceBLS[FinderDevicesBLS.NB_MAX_PLAYER];
 
         private Color[] colorsPlayer = {
             new Color(0.91f, 0.72f, 0.71f), 
@@ -68,20 +75,28 @@ namespace GameSelection {
         private void CreateCharacterPlayer(CommunicationDeviceBLS device){
             ldbFinished.AddFirst(device);
 
-            int x = (150 + (nbPlayer / 2) * 300) * (nbPlayer % 2 == 0 ? 1 : -1);
-            Vector3 position = new Vector3(x, -375, 0);
+            byte index = 0;
+            while(index < FinderDevicesBLS.NB_MAX_PLAYER && isHavePlayer[index])
+                ++index;
+            
+            cdb[index] = device;
+            isHavePlayer[index] = true;
+
+            //int x = (150 + (nbPlayer / 2) * 300) * (nbPlayer % 2 == 0 ? 1 : -1);
+            Vector3 position = new Vector3(posPlayer[index], -375, 0);
 
             GameObject go = Instantiate(panelPlayer, position, Quaternion.identity);
+            goPlayer[index] = go;
             go.transform.SetParent(canvas.transform, false);
             
             if(!device.isPlayerDefined){
                 int idColor;
                 int idCharacter;
                 do{
-                    idColor = Random.Range(0, colorUsed.Length);
+                    idColor = UnityEngine.Random.Range(0, colorUsed.Length);
                 } while(colorUsed[idColor]);
                 do{
-                    idCharacter = Random.Range(0, spriteUsed.Length);
+                    idCharacter = UnityEngine.Random.Range(0, spriteUsed.Length);
                 } while(spriteUsed[idCharacter]);
 
                 colorUsed[idColor] = true;
@@ -104,6 +119,21 @@ namespace GameSelection {
             textPlayer.GetComponent<Text>().text        = device.surnameDevice;
 
             nbPlayer++;
+
+            Debug.Log("End");
+        }
+
+        /**
+        * Detruit le panel utilisateur et libère ces données monopolisé
+        * @param    index  l'index de position du panel
+        */
+        private void DestroyCharacterPlayer(int index){
+            Destroy(goPlayer[index]);
+            goPlayer[index] = null;
+            isHavePlayer[index] = false;
+            colorUsed[cdb[index].idColor] = false;
+            spriteUsed[cdb[index].idCharacter] = false;
+            cdb[index] = null;
         }
 
         /**
@@ -127,9 +157,13 @@ namespace GameSelection {
                 LinkedList<CommunicationDeviceBLS> ldb = fdb.GetListDevicesBLS();
 
                 foreach(var device in ldb){
-                    if(!ldbFinished.Contains(device)){
+                    if(!Array.Exists(cdb, d => device.Equals(d)))
                         CreateCharacterPlayer(device);
-                    }
+                }
+
+                for(int i = 0; i < cdb.Length; ++i){
+                    if(cdb[i] != null && !ldb.Contains(cdb[i]))
+                        DestroyCharacterPlayer(i);
                 }
             }
         }

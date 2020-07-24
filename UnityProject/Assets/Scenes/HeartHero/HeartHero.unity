@@ -533,6 +533,12 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 0
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!223 &1303868832 stripped
+Canvas:
+  m_CorrespondingSourceObject: {fileID: 5913773037989343128, guid: 1dd4020dc359ff148a4db38de0343478,
+    type: 3}
+  m_PrefabInstance: {fileID: 456283076}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1 &1599282966
 GameObject:
   m_ObjectHideFlags: 0
@@ -628,10 +634,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7d911592e0e7f874988d2c1fd8918abc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvas: {fileID: 0}
-  camera: {fileID: 0}
-  loaderScene: {fileID: 0}
-  loadCanvas: {fileID: 0}
+  canvas: {fileID: 3134782781795089905, guid: 5b1feb4d52fba6d44a4a6bd6def39821, type: 3}
+  camera: {fileID: 7936683812403892810, guid: 7105f7cb2aa65da4c87040a7306ce392, type: 3}
+  loaderScene: {fileID: 360113957}
+  loadCanvas: {fileID: 1303868832}
   isLoading: 1
 --- !u!4 &1845557042
 Transform:

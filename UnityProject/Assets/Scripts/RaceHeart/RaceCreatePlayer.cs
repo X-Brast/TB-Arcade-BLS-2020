@@ -24,6 +24,8 @@ namespace RaceHeart {
         public GameObject loaderScene; // Permet de changer de Scene 
         public Canvas loadCanvas; // Canvas d'attente avant le démarage du jeu
 
+        public bool isLoading = true; // Permet de savoir si les panels sont entrain d'être créer
+
         /**
         * Verifie si aucun joueur est connecté
         * @return True si aucun joueur n'est connecté
@@ -94,6 +96,7 @@ namespace RaceHeart {
             yield return new WaitForSeconds(3.0f);
 
             loadCanvas.enabled = false;
+            isLoading = false;
         }
     }
 }

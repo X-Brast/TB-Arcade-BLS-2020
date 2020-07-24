@@ -42,7 +42,8 @@ namespace BlueConnect {
 
         private const string BEGIN_NAME_DEVICE = "BLS2020HC05HESAV";
 
-        public static string nameGame = "Luffy"; // nom de la station accueillant ce jeu
+        public static string NAME_GAME = "Luffy"; // nom de la station accueillant ce jeu
+        public static byte NB_MAX_PLAYER = 6;
 
         private static FinderDevicesBLS instance = null;
         private HoareMonitor hm = HoareMonitor.Instance;
@@ -99,10 +100,12 @@ namespace BlueConnect {
         * @param    cdb  L'objet à supprimer
         */
         public void RemoveDevice(CommunicationDeviceBLS cdb) {
+            Debug.Log(listDeviceBLS.Contains(cdb));
             if(listDeviceBLS.Contains(cdb)) {
                 listDeviceBLS.Remove(cdb);
-                listDeviceChecked.AddFirst(cdb.nameDevice);
+                listDeviceChecked.Remove(cdb.nameDevice);
             }
+            Debug.Log(listDeviceBLS.Contains(cdb));
         }
 
         /**
@@ -125,7 +128,7 @@ namespace BlueConnect {
         * @param    surname surnom du device
         */
         private void AddDeviceBLS(String name, String surname) {
-            if(listDeviceBLS.Count < 6 && !isExistDeviceConnect(name, surname)) {
+            if(listDeviceBLS.Count < NB_MAX_PLAYER && !isExistDeviceConnect(name, surname)) {
                 listDeviceBLS.AddFirst(new CommunicationDeviceBLS(name, surname));
                 listDeviceChecked.AddFirst(name);
             }
@@ -176,11 +179,11 @@ namespace BlueConnect {
                             DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
                             String[] splitReponse = response.Split(' ');
                             temp.surnameDevice = splitReponse[splitReponse.Length - 2];
-                            Marshal.PtrToStringAnsi(BTM_SendDataFast("Ok, my name is " + nameGame));
+                            Marshal.PtrToStringAnsi(BTM_SendDataFast("Ok, my name is " + NAME_GAME));
                             Thread.Sleep(2000);
                             response = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
                             Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
-                            if(response.Contains("I am connected with " + nameGame))
+                            if(response.Contains("I am connected with " + NAME_GAME))
                                 return true;
                             else
                                 return false;
@@ -191,7 +194,9 @@ namespace BlueConnect {
                     }
                 }
             } catch (Exception e) {}
-            hm.MonitorOut();
+            finally{
+                hm.MonitorOut();
+            }
             
             return false;
         }

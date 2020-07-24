@@ -20,8 +20,8 @@ namespace RaceHeart {
         // Definit dans l'editeur Unity
         public GameObject panelScorePlayer;
         public Canvas canvas; // Canvas principale. Utile pour position les panel correctement
-        public GameObject loaderScene; // Permet de changer de Scene 
-
+        
+        private LoaderScene loaderScene; // Permet de changer de Scene 
         private List<GameObject> buttons; // Contient tous les boutons d'itéreations 
 
         private CheckDeviceBLSConnected cdbc = CheckDeviceBLSConnected.Instance;
@@ -33,6 +33,8 @@ namespace RaceHeart {
         * Il va créer un panel pour joueur pour que ceci puissent voir son score.
         */
         void Start() {
+            loaderScene = GameObject.Find("LoaderScene").GetComponent<LoaderScene>();
+
             buttons = new List<GameObject>();
             buttons.Add(GameObject.Find("RestartGame")); 
             buttons.Add(GameObject.Find("SelectionGameButton"));
@@ -44,7 +46,7 @@ namespace RaceHeart {
             int nbPlayer = ldb.Count;
 
             if(nbPlayer == 0) {
-                loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
+                loaderScene.LoadLevelSelection(0);
                 return;
             }
 
@@ -79,11 +81,11 @@ namespace RaceHeart {
                 
                 go.GetComponent<Image>().color          = device.colorPlayer;
                 namePlayer.GetComponent<Text>().text    = device.surnameDevice;
-                timePlayer.GetComponent<Text>().text    = ConvertSecondToHMS(PlayerPrefs.GetInt("RaceScore" + device.surnameDevice));
                 goodHitPlayer.GetComponent<Text>().text = PlayerPrefs.GetInt("RaceGoodHit" + device.surnameDevice) + "";
                 badHitPlayer.GetComponent<Text>().text  = PlayerPrefs.GetInt("RaceBadHit" + device.surnameDevice) + "";
                 comboPlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("RaceHighstreak" + device.surnameDevice) + "";
                 imagePlayer.GetComponent<Image>().sprite= device.characterPlayer;
+                timePlayer.GetComponent<Text>().text = PlayerPrefs.GetFloat("RaceFinish" + device.surnameDevice) == 1 ? ConvertSecondToHMS((int)PlayerPrefs.GetFloat("RaceScore" + device.surnameDevice)) : "Undefined";
             }
 
             isFinishLoopFindCheck = true;
@@ -117,6 +119,9 @@ namespace RaceHeart {
             }
 
             isFinishLoopFindCheck = true;
+
+            if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0)
+                loaderScene.LoadLevelSelection(0);
         }
 
         /**
@@ -125,6 +130,7 @@ namespace RaceHeart {
         * @return   Chaine de caractère qui contient heure minute second
         */
         private string ConvertSecondToHMS(int second) {
+            Debug.Log(second);
             string hours = "";
             int s = second % 60;
             int m = second / 60;

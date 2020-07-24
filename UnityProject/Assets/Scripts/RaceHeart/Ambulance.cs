@@ -20,12 +20,16 @@ namespace RaceHeart {
 
         private RaceGameLogic rgl;
         private Rigidbody2D   rb;
+        private RaceCreatePlayer rcp;
 
         private bool    isCorrectTempo = true;
+        private bool    isGoodTempo = false;
         private bool    isFinish = false;
-        private float   delay = 0.55f; // temps idéal entre chaque compression
-        private float   timeCurrent = 0.0f; // Temps courant
-        private float   badDelay = 1.1f; // temps maximal d'attente d'une compression
+
+        private const float   MIN_DELAY = 0.48f; // temps minimal d'attente d'une compression (125 par minute)
+        private const float   MAX_DELAY = 0.66f; // temps maximal d'attente d'une compression (95 par minute)
+        private const float   MIN_GOOD_DELAY = 0.52f; // temps minimal d'attente d'une bonne compression (115 par minute)
+        private const float   MAX_GOOD_DELAY = 0.57f; // temps maximal d'attente d'une bonne compression (105 par minute)
 
         /**
         * Awake est appelé pendant que le script est en cours de chargement
@@ -40,35 +44,52 @@ namespace RaceHeart {
         */
         void Start() {
             rb.velocity = new Vector2(speed, 0);
+            rcp = GameObject.Find("CreatePlayer").GetComponent<RaceCreatePlayer>();
         }
+
+        private uint lastTime = 0;
 
         /**
         * boucle infini. retranscrit les données reçu par l'arduino en action de jeu.
         */
         void Update() {
-            if(device != null && device.data.Count > 0) {
-                int value = device.data.Dequeue();
+            if(device != null && device.data.Count > 0 && !isFinish) {
+                (byte value, uint time) = device.data.Dequeue();
 
-                if(isCorrectTempo) {
-                    rgl.GoodStreak(device.surnameDevice);
-                }
-                else {
-                    rgl.BadStreak(device.surnameDevice);
-                }  
+                if(!rcp.isLoading)
+                    StartCoroutine(hit(value, time));  
+            }
+        }
 
+        /**
+        * Défini si le hit est bon ou mauvaise
+        * @param    value  La precision du hit
+        * @param    time   Le temps où a été enregistré le hit
+        */
+        IEnumerator hit(byte value, uint time){
+            if(lastTime == 0){
+                rgl.GoodStreak(device.surnameDevice);
+                lastTime = time;
+                isCorrectTempo = true; 
                 Moving(value); 
-                isCorrectTempo = false;   
+                yield break;
             }
-            if(timeCurrent + badDelay < Time.fixedTime && !isFinish) {
-                isCorrectTempo = false;
-                rb.velocity = new Vector2(speed, 0);
-                rgl.ResetStreak(device.surnameDevice);
-            }
-            if(timeCurrent + delay < Time.fixedTime && !isFinish) {
-                isCorrectTempo = true;
-                rb.velocity = new Vector2(speed, 0);
-                timeCurrent = Time.fixedTime; 
-            }
+
+            float intervalTime = (time - lastTime) / 1000.0f;
+            Debug.Log(" delay between " + intervalTime);
+            isCorrectTempo = intervalTime >= MIN_DELAY && intervalTime  <= MAX_DELAY;
+            isGoodTempo = intervalTime >= MIN_GOOD_DELAY && intervalTime  <= MAX_GOOD_DELAY;
+            lastTime = time;
+            if(isCorrectTempo)
+                rgl.GoodStreak(device.surnameDevice);
+            else
+                rgl.BadStreak(device.surnameDevice);
+
+            Moving(value); 
+
+            yield return new WaitForSeconds(0.1f);
+
+            rb.velocity = new Vector2(speed, 0);
         }
 
         /**
@@ -80,22 +101,23 @@ namespace RaceHeart {
             float newSpeed = speed;
             switch(value) {
                 case 1:
-                    newSpeed += 1f * mult;
+                    newSpeed += 1.8f * mult;
                     break;
                 case 2:
-                    newSpeed += 0.7f * mult;
+                    newSpeed += 1.4f * mult;
                     break;
                 case 3:
-                    newSpeed += 0.5f * mult;
+                    newSpeed += 1.2f * mult;
                     break;
                 case 4:
-                    newSpeed += 0.2f * mult;
+                    newSpeed += 0.8f * mult;
                     break;
                 default:
                     newSpeed += 0;
                     break;
             }
-            newSpeed /= (isCorrectTempo ? 1 : 2);
+            newSpeed *= (isGoodTempo ? 2f : (isCorrectTempo ? 1.5f : 1f));
+            Debug.Log("new Speed " + newSpeed);
             rb.velocity = new Vector2(newSpeed , 0);
         }
 

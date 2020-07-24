@@ -34,8 +34,8 @@ unsigned int        distanceUS;
 unsigned int        distance; // distance moyenne de distance HC et US
 unsigned int        maxDistance; // Longueur maximale avant le lancement du jeu.
 String              nameBlocGame;
-unsigned long       startTime;
-unsigned long       endTime;
+unsigned long       timeStartGame;
+unsigned long       delayEndConnexion;
 
 boolean             isDown = true;
 int                 previousDistance  = 0;
@@ -210,40 +210,8 @@ void sendData(){
       fourthLineBegin = "Monte   "; // les espaces prends la place d'un caractère par rapport au mot descends.
       isChangeDisplay = true;
     }
-  }
-
-  /*if(codeSuccess > 0){
-    isChangeDisplay = true;
-    timeDisplayScore = 5;
-    lastCodeSuccess = codeSuccess;
-  } else {
-    if(timeDisplayScore == 0){
-      isChangeDisplay = true;
-      fourthLineEnd = "";
-      lastCodeSuccess = 0;
-    }
-    else{
-      if(lastCodeSuccess == 1 && !fourthLineEnd.startsWith("     Parfait")){
-        fourthLineEnd = "     Parfait";
-        isChangeDisplay = true;
-      }
-      if(lastCodeSuccess == 2 && !fourthLineEnd.startsWith("   Excellent")){
-        fourthLineEnd = "   Excellent";
-        isChangeDisplay = true;
-      }
-      if(lastCodeSuccess == 3 && !fourthLineEnd.startsWith("         Bon")){
-        fourthLineEnd = "         Bon";
-        isChangeDisplay = true;
-      }
-      if(lastCodeSuccess == 4 && !fourthLineEnd.startsWith("     Correct")){
-        fourthLineEnd = "     Correct";
-        isChangeDisplay = true;
-      }
-    }
-    timeDisplayScore -= 1;  
-  }*/
-  // if(codeSuccess != 0)
-    bluetooth.println("V" + String(isDown) + String(codeSuccess));
+  }  
+  bluetooth.println("V" + String(isDown) + String(codeSuccess) + String(millis() - timeStartGame));
 }
 
 void setup() {
@@ -264,8 +232,6 @@ void loop() {
   updateLCD();
   
   if(isConnect){
-    startTime = millis();
-
     if(bluetooth.available() > 0){
       String value = bluetooth.readString();
       bluetooth.flush();
@@ -275,15 +241,15 @@ void loop() {
         unknownCommand = false;
       }
       if(isGaming && value.equals("End Game")){
-        endTime = millis();
+        delayEndConnexion = millis();
         isGaming = false;
         unknownCommand = false;
       }
       if(!isGaming && value.equals("Start Game")){
-        endTime = millis();
+        timeStartGame = millis();
+        delayEndConnexion = millis();
         isGaming = true;
         unknownCommand = false;
-        endTime = millis();
       }
       if(unknownCommand){
         bluetooth.println("Unknown Command");
@@ -291,7 +257,7 @@ void loop() {
         unknownCommand = true;
       }
     }
-    if(isGaming && startTime >= (endTime + 300000)) {
+    if(isGaming && millis() >= (delayEndConnexion + 500000)) {
       isConnect = false;
       isGaming = false;
     }
@@ -316,8 +282,6 @@ void loop() {
       collectData();
       maxDistance = (maxDistance + distance) / 2;
       basicPressure = (basicPressure + pressure) / 2;
-      firstLine = maxDistance;
-      isChangeDisplay = true;
       int ss1 = digitalRead(BUTTON_PIN_MOVE);
       if(ss1 == HIGH)
         bluetooth.println("MOVE");
@@ -328,7 +292,7 @@ void loop() {
   }
   else {
     initConnection();
-    endTime = millis();
+    delayEndConnexion = millis();
   }
 
   if(bluetooth.overflow()){
@@ -336,5 +300,5 @@ void loop() {
     isChangeDisplay = true;
   }
 
-  delay(100);
+  delay(50);
 }

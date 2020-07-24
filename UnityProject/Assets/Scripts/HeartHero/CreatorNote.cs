@@ -19,7 +19,7 @@ namespace HeartHero {
         public GameObject note;
         public GameObject finalNote;
 
-        private const float DELAY       = 0.55f;
+        private const float DELAY       = 0.55f; // represente 110 compressions par minute
         private const int NB_MAX_NOTE   = 30;
 
         // Position initale de la note
@@ -59,7 +59,7 @@ namespace HeartHero {
             go.transform.SetParent(gameObject.transform, false);
             go.GetComponent< Activator >().device = device;
 
-            PlayerPrefs.SetInt("NotesMax", NB_MAX_NOTE);
+            PlayerPrefs.SetInt("HeroNotesMax", NB_MAX_NOTE);
 
             StartCoroutine(CreateNote());
         }

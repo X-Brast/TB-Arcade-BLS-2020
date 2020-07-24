@@ -80,7 +80,7 @@ namespace HeartHero {
                 can.renderMode = RenderMode.ScreenSpaceCamera;
                 can.worldCamera = cam;
 
-                can.transform.GetChild(0).gameObject.GetComponent< PPText >().name = "Score" + device.surnameDevice;
+                can.transform.GetChild(0).gameObject.GetComponent< PPText >().name = "HeroScore" + device.surnameDevice;
                 can.transform.GetChild(1).gameObject.GetComponent< Text >().text = device.surnameDevice;
 
                 can.SendMessage("InitDevice", device);

@@ -44,7 +44,7 @@ namespace BlueConnect {
         public Sprite characterPlayer {get; set;}
         public String nameDevice {get;}
         public String surnameDevice {get;}
-        public Queue<int> data {get; set;}
+        public Queue<(byte, uint)> data {get; set;}
 
         public bool isRunning {get; set;} = false;
         public bool isCollectData {get; set;} = false;
@@ -60,7 +60,7 @@ namespace BlueConnect {
             nameDevice = name;
             surnameDevice = surname;
 
-            data = new Queue<int>();
+            data = new Queue<(byte, uint)>();
 
             dataReceiverHelper = new DataCommunicationHelper();
         }
@@ -81,7 +81,7 @@ namespace BlueConnect {
 
                 string validation;
                 validation = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
-                if(validation.Contains("I am connected with " + FinderDevicesBLS.nameGame)){
+                if(validation.Contains("I am connected with " + FinderDevicesBLS.NAME_GAME)){
                     do{
                         Marshal.PtrToStringAnsi(BTM_SendDataFast("Start Game"));
                         Thread.Sleep(1200);
@@ -126,7 +126,7 @@ namespace BlueConnect {
 
                 string validation;
                 validation = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
-                if(validation.Contains("I am connected with " + FinderDevicesBLS.nameGame)){
+                if(validation.Contains("I am connected with " + FinderDevicesBLS.NAME_GAME)){
                     do{
                         Marshal.PtrToStringAnsi(BTM_SendDataFast("End Connection"));
                         Thread.Sleep(1200);
@@ -147,32 +147,20 @@ namespace BlueConnect {
         }
 
         private void SplitValueArduino(String values) {
-            /*string[] digits = values.Split('V');
+            string[] digits = values.Split('V');
             foreach(string v in digits){
                 if(v.StartsWith("01")){
-                    data.Enqueue(1);
+                    data.Enqueue(((byte)1, UInt32.Parse(v.Substring(2))));
                 }
                 if(v.StartsWith("02")){
-                    data.Enqueue(2);
+                    data.Enqueue(((byte)2, UInt32.Parse(v.Substring(2))));
                 }
                 if(v.StartsWith("03")){
-                    data.Enqueue(3);
+                    data.Enqueue(((byte)3, UInt32.Parse(v.Substring(2))));
                 }
                 if(v.StartsWith("04")){
-                    data.Enqueue(4);
+                    data.Enqueue(((byte)4, UInt32.Parse(v.Substring(2))));
                 }
-            }*/
-            if(values.Contains("V01")){
-                data.Enqueue(1);
-            }
-            if(values.Contains("V02")){
-                data.Enqueue(2);
-            }
-            if(values.Contains("V03")){
-                data.Enqueue(3);
-            }
-            if(values.Contains("V04")){
-                data.Enqueue(4);
             }
         }
 
@@ -182,8 +170,7 @@ namespace BlueConnect {
         * @param    CustomData  information lié au Bluetooth
         * @param    e           indique au thread qu'il y a eu une modification
         */
-        void BGW_ReceiveData(object CustomData, UnityBackgroundWorkerArguments e)
-        {
+        void BGW_ReceiveData(object CustomData, UnityBackgroundWorkerArguments e) {
             while (isCollectData) {
                 hm.MonitorIn();
                 try {
@@ -194,7 +181,7 @@ namespace BlueConnect {
                     if(status.Contains("Connected")){
                         temp.receivedData = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
                         SplitValueArduino(temp.receivedData);
-                        //e.Progress++;
+                        e.Progress++;
                         Thread.Sleep(50);
                         Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
                     }
@@ -206,18 +193,17 @@ namespace BlueConnect {
                 hm.MonitorOut();
             }
             hm.MonitorIn();     
-            while(isRunning){
+            while(isRunning) {
                 try {
                     Thread.Sleep(200);
                     string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
-                    if(status.Contains("Connected")){
+                    if(status.Contains("Connected")) {
                         string validation;
-                        do{
+                        do {
                             validation = Marshal.PtrToStringAnsi(BTM_SendAndReceiveDataFast("End Game"));
                             Thread.Sleep(1500);
-                            //validation = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
                             Debug.Log(validation);
-                        } while(!validation.Contains("I am connected with " + FinderDevicesBLS.nameGame));
+                        } while(!validation.Contains("I am connected with " + FinderDevicesBLS.NAME_GAME));
                         isRunning = false;
                         Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
                     }
@@ -228,13 +214,15 @@ namespace BlueConnect {
             }
             hm.MonitorOut();
         }
-        void BGW_ReceiveData_Progress(object CustomData, int Progress) {
-            //DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
-            //SplitValueArduino(temp.receivedData);
-        }
         /**
         * Ne fait rien
         */
-        void BGW_ReceiveData_Done(object CustomData, UnityBackgroundWorkerInformation Information) {}
+        void BGW_ReceiveData_Progress(object CustomData, int Progress) {}
+        /**
+        * Vide les données
+        */
+        void BGW_ReceiveData_Done(object CustomData, UnityBackgroundWorkerInformation Information) {
+            data.Clear();
+        }
     }
 }

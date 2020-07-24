@@ -21,7 +21,22 @@ namespace RaceHeart {
         // Definit dans l'editeur Unity
         public GameObject loaderScene; // Permet de changer de Scene 
         
-        private int nbPlayerFinish = 0; // nombre de joueur ayant fini la course.
+        private int nbPlayerFinish = 0; // nombre de joueur ayant fini la course
+        private float currentTime = 0;
+
+        private const float TIME_MAX_GAME = 240f; // en second
+
+        void Start() {
+            currentTime = Time.fixedTime;
+        }
+
+        /**
+        * Ferme tous les devices car le temps à expirer
+        */
+        void Update() {
+            if(currentTime + TIME_MAX_GAME < Time.fixedTime)
+                CloseDevices();
+        }
 
         /**
         * Indique la position du joueur dans la course
@@ -62,13 +77,16 @@ namespace RaceHeart {
         * @param    nameDevice  Le nom du device à réaliser l'opération
         */
         public void ResetDataPlayer(string nameDevice) {
-            if(!PlayerPrefs.HasKey("RaceHighstreak" + nameDevice))
-                PlayerPrefs.SetFloat("RaceHighstreak" + nameDevice, 0);
+
+            if(!PlayerPrefs.HasKey("RaceHighscore" + nameDevice))
+                PlayerPrefs.SetFloat("RaceHighscore" + nameDevice, 0);
             PlayerPrefs.SetFloat("RaceScore" + nameDevice, Time.fixedTime);
             PlayerPrefs.SetInt("RaceStreak" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceGoodHit" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceBadHit" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceMult" + nameDevice, 0);
+            PlayerPrefs.SetInt("RaceHighstreak" + nameDevice, 0);
+            PlayerPrefs.SetInt("RaceFinish" + nameDevice, 0);
         }
 
         /**
@@ -136,16 +154,24 @@ namespace RaceHeart {
         public void RaceFinish(GameObject parent, string nameDevice) {
             ++nbPlayerFinish;
             DisplayScore(parent, nbPlayerFinish);
+            PlayerPrefs.SetInt("RaceFinish" + nameDevice, 1);
             PlayerPrefs.SetFloat("RaceScore" + nameDevice, Time.fixedTime - PlayerPrefs.GetFloat("RaceScore" + nameDevice));
             if(PlayerPrefs.GetFloat("RaceScore" + nameDevice) > PlayerPrefs.GetFloat("RaceHighscore" + nameDevice));
                 PlayerPrefs.SetFloat("RaceHighscore" + nameDevice, PlayerPrefs.GetFloat("RaceScore" + nameDevice));
 
             if(nbPlayerFinish == FinderDevicesBLS.Instance.NbDevicesBLS()) {
-                LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
-                foreach (var device in ldb)
-                    device.StopGame();
-                loaderScene.GetComponent<LoaderScene>().LoadLevelScore(4);
+                CloseDevices();
             }
+        }
+
+        /**
+        * Termine le jeu pour tous les devices.
+        */
+        private void CloseDevices(){
+            LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
+            foreach (var device in ldb)
+                device.StopGame();
+            loaderScene.GetComponent<LoaderScene>().LoadLevelScore(4);
         }
     }
 }
