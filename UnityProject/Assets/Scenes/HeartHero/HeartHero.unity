@@ -450,12 +450,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1dd4020dc359ff148a4db38de0343478, type: 3}
---- !u!223 &456283077 stripped
-Canvas:
-  m_CorrespondingSourceObject: {fileID: 5913773037989343128, guid: 1dd4020dc359ff148a4db38de0343478,
-    type: 3}
-  m_PrefabInstance: {fileID: 456283076}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &648291984
 GameObject:
   m_ObjectHideFlags: 0
@@ -605,6 +599,54 @@ Transform:
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &1845557040
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1845557042}
+  - component: {fileID: 1845557041}
+  m_Layer: 0
+  m_Name: CreatePlayer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &1845557041
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1845557040}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7d911592e0e7f874988d2c1fd8918abc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  canvas: {fileID: 0}
+  camera: {fileID: 0}
+  loaderScene: {fileID: 0}
+  loadCanvas: {fileID: 0}
+  isLoading: 1
+--- !u!4 &1845557042
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1845557040}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -8.553922, y: -0.12589313, z: -32.081978}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_RootOrder: 7
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1001 &1888365135
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -703,11 +745,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 91179c146ce802a49a6b6d8b6bad58a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  canvas: {fileID: 3134782781795089905, guid: 5b1feb4d52fba6d44a4a6bd6def39821, type: 3}
-  camera: {fileID: 7936683812403892810, guid: 7105f7cb2aa65da4c87040a7306ce392, type: 3}
   loaderScene: {fileID: 360113957}
-  loadCanvas: {fileID: 456283077}
-  isLoading: 1
 --- !u!4 &2033356443
 Transform:
   m_ObjectHideFlags: 0

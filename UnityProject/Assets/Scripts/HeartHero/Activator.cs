@@ -1,87 +1,107 @@
-﻿using System.Collections;
+﻿/*
+ * Auteurs :     Alexandre Monteiro Marques
+ * Date :        29 Mai 2020
+ *
+ * Fichier :     Activator.cs
+ * Description : Il permet réaliser les opérations sur la main d'un joueur
+ */
+
+using BlueConnect;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using BlueConnect;
 
-public class Activator : MonoBehaviour
-{
-    public CommunicationDeviceBLS device;
-    
-    private GameObject note;
-    private HeroGameLogique gm;
-    private bool active = false;
-    private bool noteExist = false;
-    private Color old;
-    private SpriteRenderer sr;
-
-    void Awake(){
-        sr = GetComponent<SpriteRenderer>();
-        gm = GameObject.Find("HeroGameLogic").GetComponent<HeroGameLogique>();
-    }
-
-    // Start is called before the first frame update
-    void Start()
+namespace HeartHero {
+    public class Activator : MonoBehaviour
     {
-        old = sr.color;
-    }
+        // Definit dans l'editeur Unity
+        public CommunicationDeviceBLS device; // l'arduino associé
+        
+        private GameObject      note;
+        private HeroGameLogic   hgm;
+        private Color           old; // coleur original de la main
+        private SpriteRenderer  sr; // l'image de la main
 
-    // Update is called once per frame
-    void Update()
-    {
-        if(device != null && device.data.Count > 0) {
-            Debug.Log("Entry");
-            StartCoroutine(Pressed());
-            int value = device.data.Dequeue();
+        private bool active     = false; // Savoir si un collision est en cours
+        private bool noteExist  = false;
 
-            if(active) {
+        void Awake(){
+            sr = GetComponent<SpriteRenderer>();
+            hgm = GameObject.Find("GameLogic").GetComponent<HeroGameLogic>();
+        }
+
+        void Start() {
+            old = sr.color;
+        }
+
+        /**
+        * boucle infini. retranscrit les données reçu par l'arduino en action de jeu.
+        */
+        void Update() {
+            if(device != null && device.data.Count > 0) {
+                StartCoroutine(Pressed());
+                int value = device.data.Dequeue();
+
+                if(active) {
+                    noteExist = false;
+                    hgm.AddScore(device.surnameDevice, value);
+                    hgm.AddStreak(device.surnameDevice);
+                    Destroy(note);
+                }
+                else {
+                    hgm.ResetStreak(device.surnameDevice);
+                }
+                
+            }
+            /*if(Input.GetKeyDown(KeyCode.F)) {
+                StartCoroutine(Pressed());
+                int value = 1;
+
+                if(active) {
+                    noteExist = false;
+                    hgm.AddScore(device.surnameDevice, value);
+                    hgm.AddStreak(device.surnameDevice);
+                    Destroy(note);
+                }
+                else
+                    hgm.ResetStreak(device.surnameDevice);
+            }*/
+        }
+
+        /**
+        * Evenement de l'entrée en colision de l'ambulance
+        * @param    col  L'objet ayant collisioné avec l'ambulance
+        */
+        void OnTriggerEnter2D(Collider2D col){
+            if(col.gameObject.tag=="Note"){ 
+                noteExist = true;
+                active = true;
+                note=col.gameObject;
+            }
+        }
+
+        /**
+        * Evenement de la sortie de colision de l'ambulance
+        * @param    col  L'objet ayant collisioné avec l'ambulance
+        */
+        void OnTriggerExit2D(Collider2D col){
+            active = false;
+            if(col.gameObject.tag=="Final"){
+                hgm.EndGame();
+            }
+            if(noteExist){
+                hgm.ResetStreak(device.surnameDevice);
                 noteExist = false;
-                gm.AddScore(device.surnameDevice, value);
-                gm.AddStreak(device.surnameDevice);
-                Destroy(note);
-            }
-            else {
-                gm.ResetStreak(device.surnameDevice);
-            }
-            
-        }
-        if(Input.GetKeyDown(KeyCode.F)){
-            StartCoroutine(Pressed());
-            int value = 1;
-
-            if(active) {
-                noteExist = false;
-                gm.AddScore(device.surnameDevice, value);
-                gm.AddStreak(device.surnameDevice);
-                Destroy(note);
-            }
-            else {
-                gm.ResetStreak(device.surnameDevice);
             }
         }
-    }
 
-    void OnTriggerEnter2D(Collider2D col){
-        if(col.gameObject.tag=="Note"){ 
-            noteExist = true;
-            active = true;
-            note=col.gameObject;
+        /**
+        * Change la couleur de la main afin d'indiquer que le joueur à effectuer un hit
+        */
+        IEnumerator Pressed(){
+            sr.color = new Color(0,0,0);
+            yield return new WaitForSeconds(0.05f);
+            sr.color = old;
         }
-    }
-
-    void OnTriggerExit2D(Collider2D col){
-        active = false;
-        if(col.gameObject.tag=="Final"){
-            gm.EndGame();
-        }
-        if(noteExist){
-            gm.ResetStreak(device.surnameDevice);
-            noteExist = false;
-        }
-    }
-
-    IEnumerator Pressed(){
-        sr.color = new Color(0,0,0);
-        yield return new WaitForSeconds(0.05f);
-        sr.color = old;
     }
 }

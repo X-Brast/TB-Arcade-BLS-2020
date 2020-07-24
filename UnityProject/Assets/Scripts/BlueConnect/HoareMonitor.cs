@@ -1,3 +1,11 @@
+/*
+ * Auteurs :     Alexandre Monteiro Marques
+ * Date :        2 Juillet 2020
+ *
+ * Fichier :     HoareMonitor.cs
+ * Description : Permet de synchroniser plusieurs taché en utilisant des ressources partagés
+ */
+
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading;

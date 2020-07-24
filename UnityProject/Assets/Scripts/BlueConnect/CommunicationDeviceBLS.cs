@@ -1,3 +1,12 @@
+/*
+ * Auteurs :     Alexandre Monteiro Marques
+ * Date :        29 Juin 2020
+ *
+ * Fichier :     CommunicationDeviceBLS.cs
+ * Description : Permet de recupérer les données fourni par le device Arduino
+ */
+
+using HoV;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -5,52 +14,48 @@ using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
 using UnityEngine.UI;
-using HoV;
 
 namespace BlueConnect {
-    class DataCommunicationHelper
-    {
-        public string receivedData;
-    }
+    public class CommunicationDeviceBLS {
+        // contient des informations lié à la communication bluetooth
+        class DataCommunicationHelper {
+            public string receivedData; // donnée reçu du device
+        }
 
-    public class CommunicationDeviceBLS
-    {
+        // Ces fonctions de librairie permettent de réaliser une communication Bluetooth
+        [DllImport("BTManagerLibrary")]
+        private static extern IntPtr BTM_ConnectToDevice(String data);
+        [DllImport("BTManagerLibrary")]
+        private static extern IntPtr BTM_ReceiveDataFast(String data);
+        [DllImport("BTManagerLibrary")]
+        private static extern IntPtr BTM_SendDataFast(string data);
+        [DllImport("BTManagerLibrary")]
+        private static extern IntPtr BTM_SendAndReceiveDataFast(string data);
+        [DllImport("BTManagerLibrary")]
+        private static extern IntPtr BTM_DisconnectFromDevice();
+
         private UnityBackgroundWorker dataReceiver;
         private DataCommunicationHelper dataReceiverHelper;
         private HoareMonitor hm = HoareMonitor.Instance;
-
-        public bool isRunning {get; set;} = false;
-        public bool isCollectData {get; set;} = false;
 
         public int idColor {get; set;}
         public Color colorPlayer {get; set;}
         public int idCharacter {get; set;}
         public Sprite characterPlayer {get; set;}
-        public bool isPlayerDefined {get; set;} = false;
-        public bool endGame {get;} = false;
-
         public String nameDevice {get;}
         public String surnameDevice {get;}
         public Queue<int> data {get; set;}
 
-        [DllImport("BTManagerLibrary")]
-        private static extern bool BTM_IsConnected();
+        public bool isRunning {get; set;} = false;
+        public bool isCollectData {get; set;} = false;
+        public bool isPlayerDefined {get; set;} = false;
+        public bool endGame {get;} = false;
 
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_ConnectToDevice(String data);
-
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_ReceiveDataFast(String data);
-
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_SendDataFast(string data);
-
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_SendAndReceiveDataFast(string data);
-
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_DisconnectFromDevice();
-
+        /**
+        * Constructeur
+        * @param    name    nom du device
+        * @param    surname surnom du device
+        */
         public CommunicationDeviceBLS(String name, String surname){
             nameDevice = name;
             surnameDevice = surname;
@@ -60,6 +65,10 @@ namespace BlueConnect {
             dataReceiverHelper = new DataCommunicationHelper();
         }
 
+        /**
+        * Initie la communication pour la recolte de donnée. Si la connexion echoue, le device est retiré du jeu
+        * @param    caller  Le thread courant
+        */
         public void StartGame(MonoBehaviour caller){
             dataReceiver = new UnityBackgroundWorker(caller, BGW_ReceiveData, BGW_ReceiveData_Progress, BGW_ReceiveData_Done, dataReceiverHelper);
             isRunning = true;
@@ -96,11 +105,17 @@ namespace BlueConnect {
             }
         }
 
+        /**
+        * Permet d'arreter la recolte des données
+        */
         public void StopGame() {
             if(isCollectData)
                 isCollectData = false;
         }
 
+        /**
+        * Permet de dissocier le device à l'application. L'appareil Bluetooth ne sera plus connecté à cette application.
+        */
         public void Deconnect(){
             try {
                 hm.MonitorIn();
@@ -161,6 +176,12 @@ namespace BlueConnect {
             }
         }
 
+        /**
+        * Initie la connexion, recoit les données et se deconnect tant que le jeu est en cours
+        * Lorsque le jeu est terminé, stop la recolte de donnée.
+        * @param    CustomData  information lié au Bluetooth
+        * @param    e           indique au thread qu'il y a eu une modification
+        */
         void BGW_ReceiveData(object CustomData, UnityBackgroundWorkerArguments e)
         {
             while (isCollectData) {
@@ -211,6 +232,9 @@ namespace BlueConnect {
             //DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
             //SplitValueArduino(temp.receivedData);
         }
+        /**
+        * Ne fait rien
+        */
         void BGW_ReceiveData_Done(object CustomData, UnityBackgroundWorkerInformation Information) {}
     }
 }

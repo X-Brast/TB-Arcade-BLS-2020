@@ -1,59 +1,70 @@
-﻿using System;
+﻿/*
+ * Auteurs :     Alexandre Monteiro Marques
+ * Date :        29 Juin 2020
+ *
+ * Fichier :     FinderDevicesBLS.cs
+ * Description : Permet de trouver des devices avec un nom commencant par BLS2020HC05HESAV
+ *
+ *               Basé sur le modèle Singleton
+ */
+
+using HoV;
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Threading;
 using UnityEngine;
-using HoV;
 
 namespace BlueConnect {
+    public class FinderDevicesBLS {
+        // contient des informations lié au bluetooth
+        class DeviceFinderHelper {
+            public string transferedText; // list de tous les devices Bluetooth trouvé
+            public string surnameDevice; // le nom du device actuellement utilisé
+        }
 
-    class DeviceFinderHelper
-    {
-        public string transferedText;
-        public string surnameDevice;
-    }
-
-    public class FinderDevicesBLS
-    {
-        private static FinderDevicesBLS instance = null;
-        public static String nameGame = "Luffy";
-
+        // Ces fonctions de librairie permettent de réaliser une communication Bluetooth
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_GetDevicesNamesFast();
-
         [DllImport("BTManagerLibrary")]
         private static extern bool BTM_IsConnected();
-
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_ConnectToDevice(String data);
-
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_DisconnectFromDevice();
-
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_ReceiveDataFast(String data);
-
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_SendDataFast(string data);
-
         [DllImport("BTManagerLibrary")]
         private static extern bool BTM_IsReceiving();
 
-        private LinkedList<CommunicationDeviceBLS> listDeviceBLS;
-        private LinkedList<String> listDeviceChecked;
-        private UnityBackgroundWorker ubw;
-        private DeviceFinderHelper dfh;
+        private const string BEGIN_NAME_DEVICE = "BLS2020HC05HESAV";
 
+        public static string nameGame = "Luffy"; // nom de la station accueillant ce jeu
+
+        private static FinderDevicesBLS instance = null;
         private HoareMonitor hm = HoareMonitor.Instance;
         private bool isDevicesSearching = false;
 
+        private LinkedList<CommunicationDeviceBLS> listDeviceBLS;
+        private LinkedList<String> listDeviceChecked; // list de tous les devices que le programme a tenté une comunication Bluetooth
+        private UnityBackgroundWorker ubw; // Thread pour la recherche des devices
+        private DeviceFinderHelper dfh; 
+
+        /**
+        * Constructeur privé
+        */
         private FinderDevicesBLS(){
             listDeviceBLS = new LinkedList<CommunicationDeviceBLS>();
             listDeviceChecked = new LinkedList<String>();
             dfh = new DeviceFinderHelper();
         }
 
+        /**
+        * Permet de recupérer l'instance unique de cette objet. Singleton
+        */
         public static FinderDevicesBLS Instance {
             get {
                 if( instance == null)
@@ -62,70 +73,106 @@ namespace BlueConnect {
             }
         }
 
-        public void FindDevices(MonoBehaviour caller)
-        {
-            if(!isDevicesSearching){ 
+        /**
+        * Permet d'initier la recherche
+        * @param    caller  Le thread courant
+        */
+        public void FindDevices(MonoBehaviour caller) {
+            if(!isDevicesSearching) { 
                 ubw = new UnityBackgroundWorker(caller, FindDevicesBegin, FindDevicesProgress, FindDevicesDone, dfh);
                 isDevicesSearching = true;
                 ubw.Run();
             }
         }
 
-        public void StopFindDevices(){
+        /**
+        * Permet d'arreter la recherche
+        */
+        public void StopFindDevices() {
             if(isDevicesSearching)
                 ubw.Abort();
             isDevicesSearching = false;
         }
 
-        public void RemoveDevice(CommunicationDeviceBLS cdb){
-            if(listDeviceBLS.Contains(cdb)){
+        /**
+        * Permet de supprimer un device Arduino de la liste
+        * @param    cdb  L'objet à supprimer
+        */
+        public void RemoveDevice(CommunicationDeviceBLS cdb) {
+            if(listDeviceBLS.Contains(cdb)) {
                 listDeviceBLS.Remove(cdb);
                 listDeviceChecked.AddFirst(cdb.nameDevice);
             }
         }
 
-        private bool isExistDeviceConnect(String name, String surname){
-            foreach(var cdb in listDeviceBLS){
+        /**
+        * Permet de vérifier si un device est déjà associé à un objet existant.
+        * @param    name    nom du device
+        * @param    surname surnom du device
+        * @return   True si device est associé à un objet existant
+        */
+        private bool isExistDeviceConnect(String name, String surname) {
+            foreach(var cdb in listDeviceBLS) {
                 if(cdb.nameDevice.Equals(name) && cdb.surnameDevice.Equals(surname))
                     return true;
             } 
             return false;
         }
 
-        void AddDeviceBLS(String name, String surname){
-            if(listDeviceBLS.Count < 6 && !isExistDeviceConnect(name, surname)){
+        /**
+        * Créer un objet qui sera lié au device.
+        * @param    name    nom du device
+        * @param    surname surnom du device
+        */
+        private void AddDeviceBLS(String name, String surname) {
+            if(listDeviceBLS.Count < 6 && !isExistDeviceConnect(name, surname)) {
                 listDeviceBLS.AddFirst(new CommunicationDeviceBLS(name, surname));
                 listDeviceChecked.AddFirst(name);
             }
         }
 
+        /**
+        * Retourne la liste des devices
+        */
         public LinkedList<CommunicationDeviceBLS> GetListDevicesBLS() {
             return listDeviceBLS;
         }
 
+        /**
+        * retourne le nombre de device trouver
+        */
         public int NbDevicesBLS() {
             return listDeviceBLS.Count;
         }
 
+        /**
+        * Indique si la recherche est en cours
+        */
         public bool IsRunning(){
             return isDevicesSearching;
         }
 
+        /**
+        * Initie le protocole avec un device compatible
+        * @param    name        nom du device
+        * @param    CustomData  Permet de recupérer le surnom du device si le protocole est terminé
+        * @return   True si le protocole est effectué jusqu'au bout
+        */
         bool checkBLSDevice(String nameDevice, object CustomData){
+            hm.MonitorIn();
             try {
-                hm.MonitorIn();
                 string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
-                if(status.Contains("Connected")){
+                if(status.Contains("Connected")) {
                     String available = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
-                    if(available.Contains("I am available")){
+                    if(available.Contains("I am available")) {
                         string response = "";
-                        do{
+                        do {
                             Marshal.PtrToStringAnsi(BTM_SendDataFast("Hello, I search BLS device"));
                             Thread.Sleep(2000);
                             response = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
                         } while(!response.Contains(" Terminate."));
                         response = response.Substring(0, response.Length-2);
-                        if(response.Contains("I Am BLS Device. My Name Is ") && response.EndsWith(" Terminate.")){
+                        if(response.Contains("I Am BLS Device. My Name Is ") && response.EndsWith(" Terminate.")) {
                             DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
                             String[] splitReponse = response.Split(' ');
                             temp.surnameDevice = splitReponse[splitReponse.Length - 2];
@@ -144,16 +191,16 @@ namespace BlueConnect {
                     }
                 }
             } catch (Exception e) {}
-            finally {
-                Thread.Sleep(200);
-                if(BTM_IsConnected())
-                    Marshal.PtrToStringAnsi(BTM_DisconnectFromDevice());
-                hm.MonitorOut();
-            }
+            hm.MonitorOut();
             
             return false;
         }
 
+        /**
+        * Cherche les devices et tente un connexion
+        * @param    CustomData  information lié au Bluetooth
+        * @param    e           indique au thread qu'il y a eu une modification
+        */
         void FindDevicesBegin(object CustomData, UnityBackgroundWorkerArguments e) {
             try {
                 DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
@@ -161,7 +208,7 @@ namespace BlueConnect {
                 string[] devicesList = temp.transferedText.Split('\n');
                 foreach (var device in devicesList) {
                     if (device.Length != 0 && !(listDeviceChecked.Contains(device))) {
-                        if(device.Contains("BLS2020HC05HESAV")){
+                        if(device.Contains(BEGIN_NAME_DEVICE)){
                             if(checkBLSDevice(device, temp))
                                 AddDeviceBLS(device, temp.surnameDevice);
                         }
@@ -177,7 +224,14 @@ namespace BlueConnect {
                 e.ErrorMessage = error.Message;
             }
         }
+
+        /**
+        * Ne fait rien
+        */
         void FindDevicesProgress(object CustomData, int Progress) { }
+        /**
+        * Cloture la fin de la recherche
+        */
         void FindDevicesDone(object CustomData, UnityBackgroundWorkerInformation Information) {
             isDevicesSearching = false;
         }

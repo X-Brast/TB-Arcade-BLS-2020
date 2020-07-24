@@ -1,92 +1,106 @@
-﻿using System.Collections;
+﻿/*
+ * Auteurs :     Alexandre Monteiro Marques
+ * Date :        25 Mai 2020
+ *
+ * Fichier :     CreatorNote.cs
+ * Description : Il crée les notes et la main du joueur.
+ */
+
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using BlueConnect;
 
-public class CreatorNote : MonoBehaviour
-{
-    public GameObject targets;
-    public GameObject note;
-    public GameObject finalNote;
-
-    private float delay = 0.55f;
-    private float timeCurrent = 0.0f;
-    private Queue<GameObject> list = new Queue<GameObject>();
-    private bool isFinish = false;
-    private const int NB_MAX_NOTE = 30;
-    private int counterNoteCreate = 0;
-
-    private int xBegin;
-    private int yBegin;
-    private int zBegin;
-    private CommunicationDeviceBLS device; 
-    private int layer;
-
-    void InitDevice(CommunicationDeviceBLS device){
-        this.device = device;
-    }
-
-    void TheStart(int layer)
+namespace HeartHero {
+    public class CreatorNote : MonoBehaviour
     {
-        this.layer = layer;
-        xBegin = (int)note.transform.position.x;
-        yBegin = (int)note.transform.position.y;
-        zBegin = (int)note.transform.position.z;
+        // Definit dans l'editeur Unity
+        public GameObject targets; // represente la main
+        public GameObject note;
+        public GameObject finalNote;
 
-        int xTarget = (int)targets.transform.position.x;
-        int yTarget = (int)targets.transform.position.y;
-        int zTarget = (int)targets.transform.position.z;
-        Vector3 position = new Vector3(xTarget, yTarget, zTarget);
-        targets.layer = layer;
-        GameObject go = Instantiate(targets, position, Quaternion.identity);
-        go.transform.SetParent(gameObject.transform, false);
-        go.GetComponent< Activator >().device = device;
-        AnalyseSound();
+        private const float DELAY       = 0.55f;
+        private const int NB_MAX_NOTE   = 30;
 
-        StartCoroutine(CreateNote());
-    }
+        // Position initale de la note
+        private int xBegin;
+        private int yBegin;
+        private int zBegin;
+        private CommunicationDeviceBLS device; 
+        private int layer; //  niveau de la strate où sera crée les objets
 
-    private void AnalyseSound(){
-        for (int i = 0; i < NB_MAX_NOTE; i++)
+        private int counterNoteCreate   = 0;
+
+        /**
+        * Initialise le device qui sera associé à la main 
+        * @param    device  Un device
+        */
+        void InitDevice(CommunicationDeviceBLS device){
+            this.device = device;
+        }
+
+        /**
+        * Crée la main, recupère les informations d'une note et crée les notes.
+        * @param    layer  niveau de la strate
+        */
+        void TheStart(int layer)
         {
-            list.Enqueue(note);
+            this.layer = layer;
+            xBegin = (int)note.transform.position.x;
+            yBegin = (int)note.transform.position.y;
+            zBegin = (int)note.transform.position.z;
+
+            int xTarget = (int)targets.transform.position.x;
+            int yTarget = (int)targets.transform.position.y;
+            int zTarget = (int)targets.transform.position.z;
+            Vector3 position = new Vector3(xTarget, yTarget, zTarget);
+            targets.layer = layer;
+            GameObject go = Instantiate(targets, position, Quaternion.identity);
+            go.transform.SetParent(gameObject.transform, false);
+            go.GetComponent< Activator >().device = device;
+
+            PlayerPrefs.SetInt("NotesMax", NB_MAX_NOTE);
+
+            StartCoroutine(CreateNote());
         }
-        list.Enqueue(finalNote);
-        PlayerPrefs.SetInt("NotesMax", NB_MAX_NOTE);
-    }
 
-    IEnumerator CreateNote(){
-        HeroGameLogique gm = GameObject.Find("HeroGameLogic").GetComponent<HeroGameLogique>();
+        /**
+        * Crée les notes et la note final.
+        */
+        IEnumerator CreateNote(){
+            HeroCreatePlayer hcp = GameObject.Find("CreatePlayer").GetComponent<HeroCreatePlayer>();
 
-        while(gm.isLoading){
-            yield return new WaitForSeconds(1.0f);
-        }
+            // ne crée les notes que quand les devices seront prêts.
+            while(hcp.isLoading){
+                yield return new WaitForSeconds(1.0f);
+            }
 
-        while(!isFinish){
-            if(timeCurrent + delay < Time.fixedTime){
-                Vector3 position = new Vector3(xBegin, yBegin, zBegin);
-                GameObject o = list.Dequeue();
-                o.layer = layer;
-                GameObject go = Instantiate(o, position, Quaternion.identity);
+            Vector3 position;
+            GameObject go;
+            while(counterNoteCreate < NB_MAX_NOTE){
+                position = new Vector3(xBegin, yBegin, zBegin);
+                note.layer = layer;
+                go = Instantiate(note, position, Quaternion.identity);
                 go.transform.SetParent(gameObject.transform, false);
 
-                if(counterNoteCreate > NB_MAX_NOTE / 2 + 10 && counterNoteCreate < NB_MAX_NOTE){
-                    Color color = go.GetComponent<SpriteRenderer>().material.color;
-                    color.a = 0.1f;
-                    go.GetComponent<SpriteRenderer>().material.color = color;
-                }
-                else if(counterNoteCreate > NB_MAX_NOTE / 2){
-                    Color color = go.GetComponent<SpriteRenderer>().material.color;
-                    color.a = 0.5f;
-                    go.GetComponent<SpriteRenderer>().material.color = color;
-                }
+                Color color = go.GetComponent<SpriteRenderer>().material.color;
 
-                isFinish = list.Count == 0;
+                if(counterNoteCreate > NB_MAX_NOTE / 2 + 10 && counterNoteCreate < NB_MAX_NOTE)
+                    color.a = 0.1f;
+                else if(counterNoteCreate > NB_MAX_NOTE / 2)
+                    color.a = 0.5f;
+
+                go.GetComponent<SpriteRenderer>().material.color = color;
+
                 ++counterNoteCreate;
-                timeCurrent = Time.fixedTime;
-                
+                yield return new WaitForSeconds(DELAY);
             }
-            yield return new WaitForSeconds(0.01f);
+
+            // Création de la note final
+            position = new Vector3(xBegin, yBegin, zBegin);
+            finalNote.layer = layer;
+            go = Instantiate(finalNote, position, Quaternion.identity);
+            go.transform.SetParent(gameObject.transform, false);
         }
     }
 }

@@ -14,7 +14,7 @@ GameObject:
   - component: {fileID: 3134782781795089907}
   - component: {fileID: 3134782781795089911}
   m_Layer: 5
-  m_Name: HeartCanvasPlayer
+  m_Name: HeroCanvasPlayer
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
