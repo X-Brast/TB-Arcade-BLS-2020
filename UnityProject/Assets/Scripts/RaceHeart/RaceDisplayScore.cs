@@ -26,7 +26,7 @@ namespace RaceHeart {
 
         private CheckDeviceBLSConnected cdbc = CheckDeviceBLSConnected.Instance;
         private int     idButtonSelect = 0;
-        private bool    isFinishLoopFindCheck = false;
+        private bool    isFinishLoopCheck = false;
 
         /**
         * Start est appelé avant la première actualisation de la frame
@@ -85,19 +85,19 @@ namespace RaceHeart {
                 badHitPlayer.GetComponent<Text>().text  = PlayerPrefs.GetInt("RaceBadHit" + device.surnameDevice) + "";
                 comboPlayer.GetComponent<Text>().text   = PlayerPrefs.GetInt("RaceHighstreak" + device.surnameDevice) + "";
                 imagePlayer.GetComponent<Image>().sprite= device.characterPlayer;
-                timePlayer.GetComponent<Text>().text = PlayerPrefs.GetFloat("RaceFinish" + device.surnameDevice) == 1 ? ConvertSecondToHMS((int)PlayerPrefs.GetFloat("RaceScore" + device.surnameDevice)) : "Undefined";
+                timePlayer.GetComponent<Text>().text = PlayerPrefs.GetInt("RaceFinish" + device.surnameDevice) == 1 ? ConvertSecondToMS((int)PlayerPrefs.GetFloat("RaceScore" + device.surnameDevice)) : "Undefined";
             }
 
-            isFinishLoopFindCheck = true;
+            isFinishLoopCheck = true;
         }
 
         /**
         * Verification que les devices sont toujours connecté
         */
         void Update() {
-            if(isFinishLoopFindCheck) {
+            if(isFinishLoopCheck) {
                 StartCoroutine(CheckDevices());
-                isFinishLoopFindCheck = false;
+                isFinishLoopCheck = false;
             }
         }
 
@@ -110,15 +110,17 @@ namespace RaceHeart {
             while(cdbc.IsRunning())
                 yield return new WaitForSeconds(.3f);
 
-            if(cdbc.GetIsSelect())
+            if(cdbc.GetIsSelect()){
                 EventSystem.current.currentSelectedGameObject.GetComponent<Button>().onClick.Invoke();
+                yield break;
+            }
 
             if(cdbc.GetIsNeedMove()) {
                 idButtonSelect = (++idButtonSelect) % buttons.Count;
                 EventSystem.current.SetSelectedGameObject(buttons[idButtonSelect], null);
             }
 
-            isFinishLoopFindCheck = true;
+            isFinishLoopCheck = true;
 
             if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0)
                 loaderScene.LoadLevelSelection(0);
@@ -127,17 +129,14 @@ namespace RaceHeart {
         /**
         * Converti des seconds en heure minute second 
         * @param    second  les seconds à convertir
-        * @return   Chaine de caractère qui contient heure minute second
+        * @return   Chaine de caractère qui contient minute second
         */
-        private string ConvertSecondToHMS(int second) {
+        private string ConvertSecondToMS(int second) {
             Debug.Log(second);
             string hours = "";
             int s = second % 60;
             int m = second / 60;
-            int h = second / 3600;
 
-            if(h > 0)
-                hours += h + "h";
             if(m > 0)
                 hours += m + "'";
             hours += s + "''";

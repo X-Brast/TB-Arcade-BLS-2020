@@ -26,7 +26,7 @@ namespace HeartHero {
 
         private CheckDeviceBLSConnected cdbc = CheckDeviceBLSConnected.Instance;
         private int     idButtonSelect = 0;
-        private bool    isFinishLoopFindCheck = false;
+        private bool    isFinishLoopCheck = false;
 
         /**
         * Start est appelé avant la première actualisation de la frame
@@ -86,16 +86,16 @@ namespace HeartHero {
                 imagePlayer.GetComponent<Image>().sprite= device.characterPlayer;
             }
 
-            isFinishLoopFindCheck = true;
+            isFinishLoopCheck = true;
         }
 
         /**
         * Verification que les devices sont toujours connecté
         */
         void Update(){
-            if(isFinishLoopFindCheck){
+            if(isFinishLoopCheck){
                 StartCoroutine(CheckDevices());
-                isFinishLoopFindCheck = false;
+                isFinishLoopCheck = false;
             }
         }
 
@@ -111,16 +111,17 @@ namespace HeartHero {
 
             if(cdbc.GetIsSelect()){
                 EventSystem.current.currentSelectedGameObject.GetComponent<Button>().onClick.Invoke();
+                yield break;
             }
             if(cdbc.GetIsNeedMove()){
                 idButtonSelect = (++idButtonSelect) % buttons.Count;
                 EventSystem.current.SetSelectedGameObject(buttons[idButtonSelect], null);
             }
 
-            isFinishLoopFindCheck = true;
-
             if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0)
                 loaderScene.LoadLevelSelection(0);
+
+            isFinishLoopCheck = true;
         }
     }
 }

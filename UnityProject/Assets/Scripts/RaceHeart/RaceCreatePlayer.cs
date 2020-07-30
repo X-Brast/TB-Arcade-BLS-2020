@@ -20,8 +20,7 @@ namespace RaceHeart {
     {
         // Definit dans l'editeur Unity
         public Canvas canvas; // Le canvas qui contient les objets nécéssaire au joueur.
-        public Camera camera; // La caméra destiné au joueur
-        public GameObject loaderScene; // Permet de changer de Scene 
+        public Camera ownCamera; // La caméra destiné au joueur
         public Canvas loadCanvas; // Canvas d'attente avant le démarage du jeu
 
         public bool isLoading = true; // Permet de savoir si les panels sont entrain d'être créer
@@ -32,7 +31,7 @@ namespace RaceHeart {
         */
         private bool IsNoPlayer() {
             if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0) {
-                loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
+                GameObject.Find("LoaderScene").GetComponent<LoaderScene>().LoadLevelSelection(0);
                 return true;
             }
             return false;
@@ -59,14 +58,13 @@ namespace RaceHeart {
                 device.StartGame(this);
 
             if(IsNoPlayer())
-                yield return null;
+                yield break;
 
             RaceGameLogic rgl = GameObject.Find("GameLogic").GetComponent<RaceGameLogic>();
 
             ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
             int nbPlayer = ldb.Count;
             float w = 1.0f/nbPlayer;
-            float speed = 0;
             int counter = 0;
 
             foreach (var device in ldb) {
@@ -74,7 +72,7 @@ namespace RaceHeart {
                 
                 rgl.ResetDataPlayer(device.surnameDevice);
 
-                Camera cam = Instantiate(camera, new Vector3(0, 0,-10), Quaternion.identity);
+                Camera cam = Instantiate(ownCamera, new Vector3(0, 0,-10), Quaternion.identity);
                 cam.rect = new Rect(0.0f, w * counter, 1.0f, w);
                 cam.cullingMask = (1 << layer) + (1 << LayerMask.NameToLayer("UI")); // attribu deux layer à la caméra
 
@@ -86,7 +84,6 @@ namespace RaceHeart {
                 can.transform.GetChild(0).gameObject.GetComponent< Image >().color = device.colorPlayer;
                 can.transform.GetChild(0).GetChild(0).gameObject.layer = layer;
                 can.transform.GetChild(0).GetChild(1).gameObject.layer = layer;
-                can.transform.GetChild(0).GetChild(1).gameObject.GetComponent< Ambulance >().speed = speed;
                 can.transform.GetChild(0).GetChild(1).gameObject.GetComponent< Ambulance >().device = device;
 
                 ++counter;

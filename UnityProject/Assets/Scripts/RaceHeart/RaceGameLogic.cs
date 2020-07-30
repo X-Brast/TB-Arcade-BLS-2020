@@ -19,8 +19,6 @@ namespace RaceHeart {
     public class RaceGameLogic : MonoBehaviour
     {
         // Definit dans l'editeur Unity
-        public GameObject loaderScene; // Permet de changer de Scene 
-        
         private int nbPlayerFinish = 0; // nombre de joueur ayant fini la course
         private float currentTime = 0;
 
@@ -68,7 +66,7 @@ namespace RaceHeart {
                     namePosition = "Inconnu";
                     break;
             }
-            parent.transform.GetChild(0).gameObject.active = true;
+            parent.transform.GetChild(0).gameObject.SetActive(true);
             parent.transform.GetChild(0).gameObject.GetComponent< Text >().text = namePosition;
         }
 
@@ -84,7 +82,7 @@ namespace RaceHeart {
             PlayerPrefs.SetInt("RaceStreak" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceGoodHit" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceBadHit" + nameDevice, 0);
-            PlayerPrefs.SetInt("RaceMult" + nameDevice, 0);
+            PlayerPrefs.SetFloat("RaceMult" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceHighstreak" + nameDevice, 0);
             PlayerPrefs.SetInt("RaceFinish" + nameDevice, 0);
         }
@@ -98,22 +96,22 @@ namespace RaceHeart {
             PlayerPrefs.SetInt("RaceStreak" + nameDevice, PlayerPrefs.GetInt("RaceStreak" + nameDevice)+1);
 
             int streak = PlayerPrefs.GetInt("RaceStreak" + nameDevice);
-            int multiplier = PlayerPrefs.GetInt("RaceMult" + nameDevice);
+            float multiplier = PlayerPrefs.GetFloat("RaceMult" + nameDevice);
 
             if(streak > 50)
-                multiplier = 10;
+                multiplier = 5f;
             else if(streak > 40)
-                multiplier = 5;
+                multiplier = 3f;
             else if(streak > 30)
-                multiplier = 4;
+                multiplier = 2.5f;
             else if(streak > 20)
-                multiplier = 3;
+                multiplier = 2f;
             else if(streak > 10)
-                multiplier = 2;
+                multiplier = 1.5f;
             else
                 multiplier = 1;
 
-            PlayerPrefs.SetInt("RaceMult" + nameDevice, multiplier);
+            PlayerPrefs.SetFloat("RaceMult" + nameDevice, multiplier);
 
             if(streak > PlayerPrefs.GetInt("RaceHighstreak" + nameDevice))
                 PlayerPrefs.SetInt("RaceHighstreak" + nameDevice, streak);
@@ -133,7 +131,7 @@ namespace RaceHeart {
         * @param    nameDevice  Le nom du device qui a fait ce hit
         */
         public void ResetStreak(string nameDevice) {
-            PlayerPrefs.SetInt("RaceMult" + nameDevice, 1);
+            PlayerPrefs.SetFloat("RaceMult" + nameDevice, 1f);
             PlayerPrefs.SetInt("RaceStreak" + nameDevice, 0);
         }
 
@@ -142,8 +140,8 @@ namespace RaceHeart {
         * @param    nameDevice  Le nom du device qui a fait ce hit
         * @return   Le multiplicateur du joueur
         */
-        public int GetMult(string nameDevice) {
-            return PlayerPrefs.GetInt("RaceMult" + nameDevice);
+        public float GetMult(string nameDevice) {
+            return PlayerPrefs.GetFloat("RaceMult" + nameDevice);
         } 
 
         /**
@@ -171,7 +169,7 @@ namespace RaceHeart {
             LinkedList<CommunicationDeviceBLS> ldb = FinderDevicesBLS.Instance.GetListDevicesBLS();
             foreach (var device in ldb)
                 device.StopGame();
-            loaderScene.GetComponent<LoaderScene>().LoadLevelScore(4);
+            GameObject.Find("LoaderScene").GetComponent<LoaderScene>().LoadLevelScore(4);
         }
     }
 }

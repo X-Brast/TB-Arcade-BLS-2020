@@ -20,14 +20,14 @@ namespace Utils {
         /**
         * Permet de recommencer le jeu
         */
-        public void RestartGame(int idLevel) {
+        public void StartGame(int idLevel) {
             loaderScene.GetComponent<LoaderScene>().LoadLevelGame(idLevel);
         } 
 
         /**
         * Permet de revenir à la sélection des jeux
         */
-        public void GameSelection() {
+        public void ReturnGameSelection() {
             loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
         }
 

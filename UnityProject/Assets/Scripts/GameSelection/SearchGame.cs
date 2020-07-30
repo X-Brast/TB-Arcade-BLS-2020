@@ -20,11 +20,11 @@ namespace GameSelection {
     {
         // contient les informations des différents jeux proposé dans l'application
         class GameInformation {
-            public String   nameGame    {get;}
-            public int      idScene     {get;}
+            public string   nameGame    {get;}
+            public byte     idScene     {get;}
             public Sprite   imageGame   {get;}
 
-            public GameInformation(String nameGame, int idScene, Sprite imageGame){
+            public GameInformation(string nameGame, byte idScene, Sprite imageGame){
                 this.nameGame = nameGame;
                 this.idScene = idScene;
                 this.imageGame = imageGame;
@@ -32,9 +32,8 @@ namespace GameSelection {
         }
 
         // Definit dans l'editeur Unity
-        public GameObject ButtonStartGame; 
+        public GameObject buttonStartGame; 
         public Canvas canvas; // permet de position correctement les boutons
-        public GameObject loaderScene; // Permet de changer de Scene 
 
         private LinkedList<GameInformation> lgi;
         private List<GameObject> games;
@@ -50,8 +49,8 @@ namespace GameSelection {
             lgi = new LinkedList<GameInformation>();
             games = new List<GameObject>();
 
-            lgi.AddLast(new GameInformation("Heart Hero", 1, Resources.Load<Sprite>("GameSelection/HeartHero_ImageGame")));
-            lgi.AddLast(new GameInformation("Race Heart", 3, Resources.Load<Sprite>("GameSelection/RaceHeart_ImageGame")));
+            lgi.AddLast(new GameInformation("Heart Hero", (byte)1, Resources.Load<Sprite>("GameSelection/HeartHero_ImageGame")));
+            lgi.AddLast(new GameInformation("Race Heart", (byte)3, Resources.Load<Sprite>("GameSelection/RaceHeart_ImageGame")));
             
             CreateTileGame();
 
@@ -80,18 +79,18 @@ namespace GameSelection {
             float widthCanvas = canvas.GetComponent<RectTransform>().rect.width;
             float sizeXButton = widthCanvas / lgi.Count;
             float x = (widthCanvas - sizeXButton) / -2;
-            float y = ButtonStartGame.transform.position.y;
-            float z = ButtonStartGame.transform.position.z;
+            float y = buttonStartGame.transform.position.y;
+            float z = buttonStartGame.transform.position.z;
 
             int counter = 0;
             foreach (var gi in lgi) {
                 Vector3 position = new Vector3(x, y, z);
                 x += sizeXButton;
 
-                GameObject go = Instantiate(ButtonStartGame, position, Quaternion.identity);
+                GameObject go = Instantiate(buttonStartGame, position, Quaternion.identity);
                 go.transform.SetParent(canvas.transform, false);
                 go.GetComponent<Button>().onClick.AddListener(delegate{
-                    loaderScene.GetComponent<LoaderScene>().LoadLevelGame(gi.idScene);
+                    GameObject.Find("LoaderScene").GetComponent<LoaderScene>().LoadLevelGame(gi.idScene);
                 });
                 games.Add(go);
 

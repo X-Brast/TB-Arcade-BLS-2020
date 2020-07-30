@@ -20,12 +20,8 @@ namespace HeartHero {
         public GameObject finalNote;
 
         private const float DELAY       = 0.55f; // represente 110 compressions par minute
-        private const int NB_MAX_NOTE   = 30;
+        private const int NB_MAX_NOTE   = 100;
 
-        // Position initale de la note
-        private int xBegin;
-        private int yBegin;
-        private int zBegin;
         private CommunicationDeviceBLS device; 
         private int layer; //  niveau de la strate où sera crée les objets
 
@@ -46,13 +42,10 @@ namespace HeartHero {
         void TheStart(int layer)
         {
             this.layer = layer;
-            xBegin = (int)note.transform.position.x;
-            yBegin = (int)note.transform.position.y;
-            zBegin = (int)note.transform.position.z;
 
-            int xTarget = (int)targets.transform.position.x;
-            int yTarget = (int)targets.transform.position.y;
-            int zTarget = (int)targets.transform.position.z;
+            float xTarget = targets.transform.position.x;
+            float yTarget = targets.transform.position.y;
+            float zTarget = targets.transform.position.z;
             Vector3 position = new Vector3(xTarget, yTarget, zTarget);
             targets.layer = layer;
             GameObject go = Instantiate(targets, position, Quaternion.identity);
@@ -74,6 +67,10 @@ namespace HeartHero {
             while(hcp.isLoading){
                 yield return new WaitForSeconds(1.0f);
             }
+
+            float xBegin = note.transform.position.x;
+            float yBegin = note.transform.position.y;
+            float zBegin = note.transform.position.z;
 
             Vector3 position;
             GameObject go;

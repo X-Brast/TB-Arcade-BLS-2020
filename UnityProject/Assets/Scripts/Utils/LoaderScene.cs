@@ -52,7 +52,6 @@ namespace Utils {
             AsyncOperation op = SceneManager.LoadSceneAsync(idScene);
 
             while(!op.isDone){
-                Debug.Log(op.progress);
                 yield return null;
             }
         }

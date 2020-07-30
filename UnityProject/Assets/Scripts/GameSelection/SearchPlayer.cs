@@ -22,10 +22,9 @@ namespace GameSelection {
 
         private const float DELAY = 1.0f;
 
-        // FinderDevicesBLS.NB_MAX_PLAYER
-        private GameObject[] goPlayer = new GameObject[FinderDevicesBLS.NB_MAX_PLAYER];
-        private bool[] isHavePlayer = new bool[FinderDevicesBLS.NB_MAX_PLAYER];
-        private int[] posPlayer = {150,-150,450,-450,750,-750};
+        private GameObject[] goPlayer   = new GameObject[FinderDevicesBLS.NB_MAX_PLAYER];
+        private bool[] isHavePlayer     = new bool[FinderDevicesBLS.NB_MAX_PLAYER];
+        private int[] posPlayer         = {150,-150,450,-450,750,-750};
         private CommunicationDeviceBLS[] cdb = new CommunicationDeviceBLS[FinderDevicesBLS.NB_MAX_PLAYER];
 
         private Color[] colorsPlayer = {
@@ -48,9 +47,7 @@ namespace GameSelection {
         private bool[] spriteUsed = {false,false,false,false,false,false,false};
 
         private int nbPlayer = 0;
-        private float timeCurrent = 0.0f;
 
-        private LinkedList<CommunicationDeviceBLS> ldbFinished;
         private FinderDevicesBLS fdb;
         private CheckDeviceBLSConnected cdbc;
 
@@ -58,7 +55,6 @@ namespace GameSelection {
         * Crée le panel du joueur si il est déjà existant(restart d'une partie) sinon cherche de nouveau joueur.
         */
         void Start() {
-            ldbFinished = new LinkedList<CommunicationDeviceBLS>();
             fdb = FinderDevicesBLS.Instance;
             cdbc = CheckDeviceBLSConnected.Instance;
 
@@ -73,7 +69,6 @@ namespace GameSelection {
         * @param    device  Le device qui contient les informations de l'arduino
         */
         private void CreateCharacterPlayer(CommunicationDeviceBLS device){
-            ldbFinished.AddFirst(device);
 
             byte index = 0;
             while(index < FinderDevicesBLS.NB_MAX_PLAYER && isHavePlayer[index])
@@ -82,7 +77,6 @@ namespace GameSelection {
             cdb[index] = device;
             isHavePlayer[index] = true;
 
-            //int x = (150 + (nbPlayer / 2) * 300) * (nbPlayer % 2 == 0 ? 1 : -1);
             Vector3 position = new Vector3(posPlayer[index], -375, 0);
 
             GameObject go = Instantiate(panelPlayer, position, Quaternion.identity);
@@ -119,8 +113,6 @@ namespace GameSelection {
             textPlayer.GetComponent<Text>().text        = device.surnameDevice;
 
             nbPlayer++;
-
-            Debug.Log("End");
         }
 
         /**

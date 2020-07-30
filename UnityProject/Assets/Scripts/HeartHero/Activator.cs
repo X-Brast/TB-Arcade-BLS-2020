@@ -19,14 +19,13 @@ namespace HeartHero {
         
         private GameObject      note;
         private HeroGameLogic   hgm;
-        private Color           old; // coleur original de la main
+        private Color           originalColor; // coleur original de la main
         private SpriteRenderer  sr; // l'image de la main
 
         private bool active     = false; // Savoir si un collision est en cours
         private bool noteExist  = false;
 
         private int timeStart;
-        private int counter = 0;
 
         void Awake(){
             sr = GetComponent<SpriteRenderer>();
@@ -34,9 +33,8 @@ namespace HeartHero {
         }
 
         void Start() {
-            old = sr.color;
+            originalColor = sr.color;
             timeStart = (int)(Time.time * 1000);
-            Debug.Log(timeStart);
         }
 
         /**
@@ -44,13 +42,11 @@ namespace HeartHero {
         */
         void Update() {
             if(device != null && device.data.Count > 0) {
-                counter++;
-                Debug.Log("activator " + device.data.Count + counter);
                 StartCoroutine(Pressed());
 
                 (byte value, uint time)  = device.data.Dequeue();
 
-                StartCoroutine(hit(value, time));
+                StartCoroutine(Hit(value, time));
             }
         }
 
@@ -59,7 +55,7 @@ namespace HeartHero {
         * @param    value  La precision du hit
         * @param    time   Le temps où a été enregistré le hit
         */
-        IEnumerator hit(byte value, uint time){
+        IEnumerator Hit(byte value, uint time){
             int tmp = (int)(Time.time * 1000 - timeStart - time);
 
             if(tmp < 0){
@@ -97,7 +93,6 @@ namespace HeartHero {
         void OnTriggerExit2D(Collider2D col){
             active = false;
             if(col.gameObject.tag=="Final"){
-                Debug.Log(counter);
                 hgm.EndGame();
             }
             if(noteExist){
@@ -112,7 +107,7 @@ namespace HeartHero {
         IEnumerator Pressed(){
             sr.color = new Color(0,0,0);
             yield return new WaitForSeconds(0.05f);
-            sr.color = old;
+            sr.color = originalColor;
         }
     }
 }

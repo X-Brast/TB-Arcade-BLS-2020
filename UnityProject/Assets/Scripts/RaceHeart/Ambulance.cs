@@ -57,7 +57,7 @@ namespace RaceHeart {
                 (byte value, uint time) = device.data.Dequeue();
 
                 if(!rcp.isLoading)
-                    StartCoroutine(hit(value, time));  
+                    StartCoroutine(Hit(value, time));  
             }
         }
 
@@ -66,7 +66,7 @@ namespace RaceHeart {
         * @param    value  La precision du hit
         * @param    time   Le temps où a été enregistré le hit
         */
-        IEnumerator hit(byte value, uint time){
+        IEnumerator Hit(byte value, uint time){
             if(lastTime == 0){
                 rgl.GoodStreak(device.surnameDevice);
                 lastTime = time;
@@ -96,8 +96,8 @@ namespace RaceHeart {
         * Reinitialise les informations du joueur
         * @param    value  precision du hit du joueur. (1 Parfait; 2 Excellent; 3 Bon; 4 Correct)
         */
-        private void Moving(int value){
-            int mult = rgl.GetMult(device.surnameDevice);
+        private void Moving(byte value){
+            float mult = rgl.GetMult(device.surnameDevice);
             float newSpeed = speed;
             switch(value) {
                 case 1:
@@ -107,7 +107,7 @@ namespace RaceHeart {
                     newSpeed += 1.4f * mult;
                     break;
                 case 3:
-                    newSpeed += 1.2f * mult;
+                    newSpeed += 1.0f * mult;
                     break;
                 case 4:
                     newSpeed += 0.8f * mult;

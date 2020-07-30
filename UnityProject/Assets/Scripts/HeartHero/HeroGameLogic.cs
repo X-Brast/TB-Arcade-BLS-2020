@@ -18,9 +18,6 @@ using Utils;
 namespace HeartHero {
     public class HeroGameLogic : MonoBehaviour
     {
-        // Definit dans l'editeur Unity
-        public GameObject loaderScene; // Permet de changer de Scene 
-
         private bool isNotCloseGame = true;
 
         /**
@@ -28,11 +25,12 @@ namespace HeartHero {
         * @param    nameDevice  Le nom du device à réaliser l'opération
         */
         public void ResetDataPlayer(string nameDevice) {
-            if(!PlayerPrefs.HasKey("HeroHighstreak" + nameDevice))
-                PlayerPrefs.SetFloat("HeroHighstreak" + nameDevice, 0);
+			if(!PlayerPrefs.HasKey("HeroHighscore" + nameDevice))
+                PlayerPrefs.SetFloat("HeroHighscore" + nameDevice, 0);
             PlayerPrefs.SetInt("HeroScore" + nameDevice, 0);
             PlayerPrefs.SetInt("HeroNotesHit" + nameDevice, 0);
             PlayerPrefs.SetInt("HeroStreak" + nameDevice, 0);
+			PlayerPrefs.SetFloat("HeroHighstreak" + nameDevice, 0);
             PlayerPrefs.SetInt("HeroMult" + nameDevice, 1);
         }
 
@@ -87,7 +85,7 @@ namespace HeartHero {
                     if(PlayerPrefs.GetInt("HeroScore" + device.surnameDevice) > PlayerPrefs.GetInt("HeroHighscore" + device.surnameDevice));
                         PlayerPrefs.SetInt("HeroHighscore" + device.surnameDevice, PlayerPrefs.GetInt("HeroScore" + device.surnameDevice));
                 } 
-                loaderScene.GetComponent<LoaderScene>().LoadLevelScore(2);
+                GameObject.Find("LoaderScene").GetComponent<LoaderScene>().LoadLevelScore(2);
             }
         }
 
@@ -106,10 +104,10 @@ namespace HeartHero {
                     score = 150;
                     break;
                 case 3:
-                    score = 75;
+                    score = 100;
                     break;
                 case 4:
-                    score = 50;
+                    score = 75;
                     break;
                 default:
                     score = 0;

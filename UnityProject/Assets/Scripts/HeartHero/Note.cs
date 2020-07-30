@@ -16,7 +16,7 @@ namespace HeartHero {
         // Definit dans l'editeur Unity
         public float speed;
 
-        Rigidbody2D rb; // un gameobject qui permet d'appliquer la gravité à la note
+        private Rigidbody2D rb; // un gameobject qui permet d'appliquer la gravité à la note
 
         void Awake(){
             rb = GetComponent<Rigidbody2D>();

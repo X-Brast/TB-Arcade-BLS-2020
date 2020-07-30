@@ -200,12 +200,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 23c465e18f1062f42a24283e7b60af6e, type: 3}
---- !u!1 &92933440 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 5791037060468859330, guid: 23c465e18f1062f42a24283e7b60af6e,
-    type: 3}
-  m_PrefabInstance: {fileID: 92933439}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &218033883
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -524,10 +518,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 7cf62368fca490f45a081d5d25328121, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ButtonStartGame: {fileID: 7277060731545688490, guid: 8849c8de6de6afc45ba08ba1c37c3fa7,
+  buttonStartGame: {fileID: 7277060731545688490, guid: 8849c8de6de6afc45ba08ba1c37c3fa7,
     type: 3}
   canvas: {fileID: 1964330415}
-  loaderScene: {fileID: 92933440}
 --- !u!4 &1553101313
 Transform:
   m_ObjectHideFlags: 0

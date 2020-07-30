@@ -35,7 +35,7 @@ namespace BlueConnect {
         private static CheckDeviceBLSConnected instance = null;
 
         private Boolean isRunning = false;
-        private HoareMonitor hm = HoareMonitor.Instance;
+        private Mutex hm = Mutex.Instance;
         private FinderDevicesBLS fdb =  FinderDevicesBLS.Instance;
         private bool isNeedMove = false;
         private bool isSelect = false;
@@ -70,7 +70,9 @@ namespace BlueConnect {
             try {
                 isRunning = true;
                 dataReceiver.Run();               
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                Debug.Log(e.Message);
+            }
         }
 
         /**
@@ -109,7 +111,6 @@ namespace BlueConnect {
         */
         void CheckDeviceBegin(object CustomData, UnityBackgroundWorkerArguments e) {
             LinkedList<CommunicationDeviceBLS> ldb = new LinkedList<CommunicationDeviceBLS>(fdb.GetListDevicesBLS());
-            Debug.Log("Nb device " + ldb.Count);
             string data;
             hm.MonitorIn();
             foreach(var device in ldb) {
@@ -117,7 +118,7 @@ namespace BlueConnect {
                     try {
                         Thread.Sleep(50);
                         string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(device.nameDevice));
-                        Debug.Log("CHeck " + status);
+                        Debug.Log("Check " + status);
                         if(status.Contains("Connected")){
                             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
                             // on va vider le buffer totalement du module bluetooth 
@@ -152,16 +153,13 @@ namespace BlueConnect {
         void CheckDeviceProgress(object CustomData, int Progress) {
             DataCommunicationHelper temp = (DataCommunicationHelper)CustomData;
             if(!temp.receivedData.Contains("I am connected with " + FinderDevicesBLS.NAME_GAME)) {
-                Debug.Log("delete device");
                 fdb.RemoveDevice(temp.device);
             }
             if(temp.receivedData.Contains("MOVE")){
                 isNeedMove = true;
-                Debug.Log("Move");
             }
             if(temp.receivedData.Contains("PRESS")) {
                 isSelect = true;
-                Debug.Log("PRESS");
             }
         }
         /**

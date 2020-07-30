@@ -238,7 +238,6 @@ MonoBehaviour:
   panelScorePlayer: {fileID: 1093074880424351432, guid: 818887adaefa9594a894e60324469606,
     type: 3}
   canvas: {fileID: 2094629641}
-  loaderScene: {fileID: 246147294}
 --- !u!4 &279193537
 Transform:
   m_ObjectHideFlags: 0
@@ -1023,7 +1022,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1558437906}
-        m_MethodName: RestartGame
+        m_MethodName: StartGame
         m_Mode: 3
         m_Arguments:
           m_ObjectArgument: {fileID: 0}
@@ -1153,7 +1152,7 @@ MonoBehaviour:
     m_PersistentCalls:
       m_Calls:
       - m_Target: {fileID: 1558437906}
-        m_MethodName: GameSelection
+        m_MethodName: ReturnGameSelection
         m_Mode: 1
         m_Arguments:
           m_ObjectArgument: {fileID: 0}

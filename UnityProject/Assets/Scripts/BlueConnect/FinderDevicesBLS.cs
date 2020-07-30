@@ -28,29 +28,25 @@ namespace BlueConnect {
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_GetDevicesNamesFast();
         [DllImport("BTManagerLibrary")]
-        private static extern bool BTM_IsConnected();
+        private static extern IntPtr BTM_ConnectToDevice(string data);
         [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_ConnectToDevice(String data);
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_DisconnectFromDevice();
-        [DllImport("BTManagerLibrary")]
-        private static extern IntPtr BTM_ReceiveDataFast(String data);
+        private static extern IntPtr BTM_ReceiveDataFast(string data);
         [DllImport("BTManagerLibrary")]
         private static extern IntPtr BTM_SendDataFast(string data);
         [DllImport("BTManagerLibrary")]
-        private static extern bool BTM_IsReceiving();
+        private static extern IntPtr BTM_DisconnectFromDevice();
 
         private const string BEGIN_NAME_DEVICE = "BLS2020HC05HESAV";
 
-        public static string NAME_GAME = "Luffy"; // nom de la station accueillant ce jeu
-        public static byte NB_MAX_PLAYER = 6;
+        public static readonly string NAME_GAME = "Luffy"; // nom de la station accueillant ce jeu
+        public static readonly byte NB_MAX_PLAYER = 6;
 
         private static FinderDevicesBLS instance = null;
-        private HoareMonitor hm = HoareMonitor.Instance;
+        private Mutex hm = Mutex.Instance;
         private bool isDevicesSearching = false;
 
         private LinkedList<CommunicationDeviceBLS> listDeviceBLS;
-        private LinkedList<String> listDeviceChecked; // list de tous les devices que le programme a tenté une comunication Bluetooth
+        private LinkedList<string> listDeviceChecked; // list de tous les devices que le programme a tenté une comunication Bluetooth
         private UnityBackgroundWorker ubw; // Thread pour la recherche des devices
         private DeviceFinderHelper dfh; 
 
@@ -114,7 +110,7 @@ namespace BlueConnect {
         * @param    surname surnom du device
         * @return   True si device est associé à un objet existant
         */
-        private bool isExistDeviceConnect(String name, String surname) {
+        private bool isExistDeviceConnect(string name, string surname) {
             foreach(var cdb in listDeviceBLS) {
                 if(cdb.nameDevice.Equals(name) && cdb.surnameDevice.Equals(surname))
                     return true;
@@ -127,7 +123,7 @@ namespace BlueConnect {
         * @param    name    nom du device
         * @param    surname surnom du device
         */
-        private void AddDeviceBLS(String name, String surname) {
+        private void AddDeviceBLS(string name, string surname) {
             if(listDeviceBLS.Count < NB_MAX_PLAYER && !isExistDeviceConnect(name, surname)) {
                 listDeviceBLS.AddFirst(new CommunicationDeviceBLS(name, surname));
                 listDeviceChecked.AddFirst(name);
@@ -161,12 +157,12 @@ namespace BlueConnect {
         * @param    CustomData  Permet de recupérer le surnom du device si le protocole est terminé
         * @return   True si le protocole est effectué jusqu'au bout
         */
-        bool checkBLSDevice(String nameDevice, object CustomData){
+        bool checkBLSDevice(string nameDevice, object CustomData){
             hm.MonitorIn();
             try {
                 string status = Marshal.PtrToStringAnsi(BTM_ConnectToDevice(nameDevice));
                 if(status.Contains("Connected")) {
-                    String available = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
+                    string available = Marshal.PtrToStringAnsi(BTM_ReceiveDataFast(nameDevice));
                     if(available.Contains("I am available")) {
                         string response = "";
                         do {
@@ -177,7 +173,7 @@ namespace BlueConnect {
                         response = response.Substring(0, response.Length-2);
                         if(response.Contains("I Am BLS Device. My Name Is ") && response.EndsWith(" Terminate.")) {
                             DeviceFinderHelper temp = (DeviceFinderHelper)CustomData;
-                            String[] splitReponse = response.Split(' ');
+                            string[] splitReponse = response.Split(' ');
                             temp.surnameDevice = splitReponse[splitReponse.Length - 2];
                             Marshal.PtrToStringAnsi(BTM_SendDataFast("Ok, my name is " + NAME_GAME));
                             Thread.Sleep(2000);
@@ -193,7 +189,9 @@ namespace BlueConnect {
                         }
                     }
                 }
-            } catch (Exception e) {}
+            } catch (Exception e) {
+                Debug.Log(e.Message);
+            }
             finally{
                 hm.MonitorOut();
             }

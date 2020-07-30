@@ -15,13 +15,13 @@
 // Déclaration
 //
 
-SoftwareSerial      bluetooth(8,9);
-LiquidCrystal       lcd(12,11,7,6,5,4);
+SoftwareSerial      bluetooth(10,11);
+LiquidCrystal       lcd(4,5,6,7,8,9);
 
 const byte          TRIGGER_PIN_HC    = 2;
 const byte          ECHO_PIN_HC       = 3;
 const byte          BUTTON_PIN_MOVE   = 13;
-const byte          BUTTON_PIN_SELECT = 10;
+const byte          BUTTON_PIN_SELECT = 12;
 const byte          FRS_PIN           = A0;
 const unsigned long MEASURE_TIMEOUT   = 25000UL;
 const float         SOUND_SPEED       = 340.0 / 1000; // Vitesse du son en mm/s
@@ -133,12 +133,6 @@ void checkCorrect(){
 
   if(isDown){
     int diffPressure = pressure - basicPressure;
-    /*firstLine = pressure;
-    firstLine += " - ";
-    firstLine += basicPressure;
-    firstLine += " = ";
-    firstLine += diffPressure;
-    isChangeDisplay = true;*/
     int diffDistance = maxDistance - distance;
     
     if(previousDistance * 0.95 > diffDistance){
@@ -187,11 +181,6 @@ void collectData(){
 void sendData(){
   collectData(); 
   checkCorrect();
-
-  firstLine = maxDistance;
-  firstLine += " ";
-  firstLine += distance;
-  isChangeDisplay = true;
 
   if(!thirdLine.equals("Partie en cours")){
     thirdLine = "Partie en cours";
@@ -257,7 +246,7 @@ void loop() {
         unknownCommand = true;
       }
     }
-    if(isGaming && millis() >= (delayEndConnexion + 500000)) {
+    if(millis() >= (delayEndConnexion + 500000)) {
       isConnect = false;
       isGaming = false;
     }
@@ -294,11 +283,5 @@ void loop() {
     initConnection();
     delayEndConnexion = millis();
   }
-
-  if(bluetooth.overflow()){
-    firstLine = "overflow";
-    isChangeDisplay = true;
-  }
-
   delay(50);
 }

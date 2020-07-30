@@ -20,8 +20,7 @@ namespace HeartHero {
     {
         // Definit dans l'editeur Unity
         public Canvas canvas; // Le canvas qui contient les objets nécéssaire au joueur.
-        public Camera camera; // La caméra destiné au joueur
-        public GameObject loaderScene; // Permet de changer de Scene 
+        public Camera ownCamera; // La caméra destiné au joueur
         public Canvas loadCanvas; // Canvas d'attente avant le démarage du jeu
 
         public bool isLoading = true; // Permet de savoir si les panels sont entrain d'être créer
@@ -32,7 +31,7 @@ namespace HeartHero {
         */
         private bool IsNoPlayer() {
             if(FinderDevicesBLS.Instance.NbDevicesBLS() == 0) {
-                loaderScene.GetComponent<LoaderScene>().LoadLevelSelection(0);
+                GameObject.Find("LoaderScene").GetComponent<LoaderScene>().LoadLevelSelection(0);
                 return true;
             }
             return false;
@@ -71,7 +70,7 @@ namespace HeartHero {
 
                 hgl.ResetDataPlayer(device.surnameDevice);
 
-                Camera cam = Instantiate(camera, new Vector3(0, 0,-10), Quaternion.identity);
+                Camera cam = Instantiate(ownCamera, new Vector3(0, 0,-10), Quaternion.identity);
                 cam.rect = new Rect(w * counter, 0.0f, w, 1.0f);
                 cam.backgroundColor = device.colorPlayer;
                 cam.cullingMask = (1 << layer) + (1 << LayerMask.NameToLayer("UI"));

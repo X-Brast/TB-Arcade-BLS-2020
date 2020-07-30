@@ -15,13 +15,13 @@ namespace Utils {
     public class PPText : MonoBehaviour
     {
         // Definit dans l'editeur Unity
-        public string name; // la clé pour recupérer l'information
+        public string nameKey; // la clé pour recupérer l'information
 
         /**
         * Change le text chaque frame
         */
         void Update() {
-            GetComponent<Text>().text = PlayerPrefs.GetInt(name) + "";
+            GetComponent<Text>().text = PlayerPrefs.GetInt(nameKey) + "";
         }
     }
 }

@@ -86,7 +86,6 @@ namespace HoV {
 			Thread DoneThread =  new Thread(() => DoneMethod(Data, Information));
 			DoneThread.IsBackground = true;
 			DoneThread.Start();
-			//DoneMethod(Data, Information);
 			args = null;
 			WorkerThread = null;
 			Information = null;
